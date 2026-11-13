@@ -1,0 +1,2823 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הרמתון • שחקן המשחק ועיתון הסיכום</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Heebo', 'sans-serif'],
+            display: ['Rubik', 'Heebo', 'sans-serif'],
+          },
+          colors: {
+            pitch: {
+              950: '#040b09',
+              900: '#081511',
+              800: '#0f261f',
+            },
+          },
+          boxShadow: {
+            'gold-glow': '0 0 25px -5px rgba(245, 158, 11, 0.35)',
+            'emerald-glow': '0 0 25px -5px rgba(16, 185, 129, 0.35)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Heebo', sans-serif;
+      background-color: #060d0b;
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.12), transparent 35%),
+        radial-gradient(circle at 85% 20%, rgba(245, 158, 11, 0.08), transparent 35%),
+        linear-gradient(180deg, #060d0b 0%, #091318 100%);
+      min-height: 100vh;
+    }
+
+    .gold-gradient {
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+    }
+
+    .emerald-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a1412;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f3630;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2e5249;
+    }
+
+    /* Lightbox Smooth Panning */
+    .lightbox-img-stage {
+      touch-action: none;
+      user-select: none;
+    }
+    .cursor-grab-custom {
+      cursor: grab;
+    }
+    .cursor-grabbing-custom {
+      cursor: grabbing;
+    }
+  </style>
+</head>
+<body class="text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950">
+
+  <!-- ==================== STICKY HEADER ==================== -->
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-emerald-500/20 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+        <!-- Brand & Editable League Title -->
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl emerald-gradient flex items-center justify-center shadow-emerald-glow shrink-0">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="12 7 16.5 10.5 14.8 16 9.2 16 7.5 10.5"></polygon>
+              <line x1="12" y1="2" x2="12" y2="7"></line>
+              <line x1="21.5" y1="9" x2="16.5" y2="10.5"></line>
+              <line x1="18" y1="20" x2="14.8" y2="16"></line>
+              <line x1="6" y1="20" x2="9.2" y2="16"></line>
+              <line x1="2.5" y1="9" x2="7.5" y2="10.5"></line>
+            </svg>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div id="titleDisplayContainer" class="flex items-center gap-2">
+              <h1 id="leagueTitleText" class="font-display text-xl sm:text-2xl font-black tracking-tight text-white truncate">
+                הרמתון
+              </h1>
+              <button
+                id="editTitleBtn"
+                type="button"
+                title="ערוך את שם הליגה"
+                class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-800/80 transition-colors shrink-0"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                  <path d="m15 5 4 4"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Live Storage & Cloud Sync Status Pill -->
+            <button
+              id="connectionBadge"
+              type="button"
+              class="mt-1 inline-flex items-center gap-1.5 text-xs text-sky-300 bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
+              title="לחץ להפעלת שמירה אוטומטית בענן עבור כל החברים"
+            >
+              <span id="connectionDot" class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+              <span id="connectionText">שמירה מקומית • לחץ להפעלת שמירה אוטומטית בענן</span>
+            </button>
+
+            <!-- Inline Title Editor Form -->
+            <form id="titleEditForm" class="hidden flex items-center gap-2">
+              <input
+                id="leagueTitleInput"
+                type="text"
+                maxlength="40"
+                placeholder="הזן שם ליגה..."
+                class="bg-slate-900 border border-emerald-500/50 rounded-xl px-3 py-1 text-base sm:text-lg font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 w-48 sm:w-64"
+              />
+              <button
+                type="submit"
+                class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm transition-colors"
+              >
+                שמור
+              </button>
+              <button
+                id="cancelEditTitleBtn"
+                type="button"
+                class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm transition-colors"
+              >
+                ביטול
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Controls: Cloud Auto-Save + Download Site + Primary Upload CTA -->
+        <div class="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 sm:gap-3">
+          <button
+            id="openCloudModalBtn"
+            type="button"
+            class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-sky-500/30 text-sky-300 hover:text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+            title="הפעלת שמירה אוטומטית בענן בלחיצה אחת"
+          >
+            <svg class="w-4 h-4 text-sky-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+            </svg>
+            <span>שמירה בענן</span>
+          </button>
+
+          <button
+            id="openBackupModalBtn"
+            type="button"
+            class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+            title="הורד את קובץ האתר מוכן להעלאה לאינטרנט"
+          >
+            <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>הורד קובץ להעלאה</span>
+          </button>
+
+          <button
+            id="openUploadModalBtn"
+            type="button"
+            class="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl emerald-gradient hover:brightness-110 active:scale-[0.99] text-slate-950 font-display font-bold text-sm sm:text-base shadow-emerald-glow transition-all cursor-pointer"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>העלאת שבוע חדש</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+
+    <!-- Stats Strip -->
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-5">
+      <!-- Total Weeks Card -->
+      <div class="bg-slate-900/70 backdrop-blur-md border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs sm:text-sm text-slate-400 font-medium">מחזורים בארכיון</p>
+          <p id="statTotalWeeks" class="font-display text-2xl sm:text-3xl font-black text-white mt-0.5">0</p>
+        </div>
+      </div>
+
+      <!-- Latest Match Card -->
+      <div class="bg-slate-900/70 backdrop-blur-md border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs sm:text-sm text-slate-400 font-medium">המשחק האחרון</p>
+          <p id="statLatestDate" class="font-display text-base sm:text-lg font-bold text-white truncate mt-1">טוען...</p>
+        </div>
+      </div>
+
+      <!-- Top MVP Leader Card -->
+      <div class="bg-slate-900/70 backdrop-blur-md border border-amber-500/25 rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs sm:text-sm text-amber-300/90 font-medium">מלך תארי שחקן המשחק</p>
+          <p id="statTopPlayer" class="font-display text-base sm:text-lg font-bold text-amber-400 truncate mt-1">—</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter & Search Bar -->
+    <section class="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-3.5 sm:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div class="relative flex-1">
+        <svg class="w-5 h-5 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="חיפוש לפי שם שחקן המשחק, כותרת מחזור או חודש..."
+          class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500/60 rounded-xl pr-11 pl-10 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+        />
+        <button
+          id="clearSearchBtn"
+          type="button"
+          class="hidden absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+          title="נקה חיפוש"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button
+          id="sortToggleBtn"
+          type="button"
+          class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-xs sm:text-sm font-medium text-slate-200 transition-colors"
+        >
+          <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m3 16 4 4 4-4"></path>
+            <path d="M7 20V4"></path>
+            <path d="m21 8-4-4-4 4"></path>
+            <path d="M17 4v16"></path>
+          </svg>
+          <span id="sortLabel">החדש ביותר תחילה</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Month Filter Pills -->
+    <div id="monthFilterBar" class="hidden flex items-center gap-2 overflow-x-auto pb-1"></div>
+
+    <!-- Weekly Feed Container -->
+    <section id="feedContainer" class="space-y-6">
+      <!-- Loading Skeleton -->
+      <div id="loadingState" class="space-y-6">
+        <div class="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 animate-pulse space-y-4">
+          <div class="h-6 bg-slate-800 rounded-lg w-48"></div>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div class="lg:col-span-5 h-72 bg-slate-800/80 rounded-2xl"></div>
+            <div class="lg:col-span-7 h-72 bg-slate-800/80 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-slate-900/60 backdrop-blur-md border border-dashed border-slate-700 rounded-3xl p-10 sm:p-14 text-center max-w-2xl mx-auto">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4">
+          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+          </svg>
+        </div>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-white">עדיין אין מחזורים בארכיון</h2>
+        <p class="text-slate-400 text-sm sm:text-base mt-2 max-w-md mx-auto">
+          העלו עכשיו את תמונת שחקן המשחק ואת עיתון הסיכום של השבוע כדי להתחיל לתעד את ההיסטוריה של הרמתון!
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <button
+            id="emptyUploadBtn"
+            type="button"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl emerald-gradient text-slate-950 font-display font-bold text-sm sm:text-base shadow-emerald-glow hover:brightness-110 transition-all"
+          >
+            <span>+ העלה את השבוע הראשון</span>
+          </button>
+          <button
+            id="loadDemoBtn"
+            type="button"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-colors"
+          >
+            <span>טען מחזורים לדוגמה</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- No Search Results State -->
+      <div id="noFilterResultsState" class="hidden bg-slate-900/60 border border-slate-800 rounded-3xl p-10 text-center">
+        <p class="text-lg font-bold text-slate-200">לא נמצאו מחזורים התואמים לחיפוש שלך</p>
+        <p class="text-sm text-slate-400 mt-1">נסו לחפש שם שחקן אחר או לאפס את הסינון</p>
+        <button
+          id="resetFiltersBtn"
+          type="button"
+          class="mt-4 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 text-sm font-semibold"
+        >
+          הצג את כל המחזורים
+        </button>
+      </div>
+
+      <!-- Weekly Match Cards List -->
+      <div id="weeklyFeed" class="space-y-8"></div>
+    </section>
+
+  </main>
+
+  <!-- ==================== UPLOAD / EDIT MODAL ==================== -->
+  <div id="uploadModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm p-3 sm:p-6 flex items-start sm:items-center justify-center">
+    <div class="relative w-full max-w-3xl bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden my-auto">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 bg-slate-950/90 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl emerald-gradient flex items-center justify-center text-slate-950 font-bold">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 id="uploadModalTitle" class="font-display text-lg sm:text-xl font-extrabold text-white">העלאת מחזור חדש</h3>
+            <p class="text-xs text-slate-400">העלו את תמונת המצטיין ואת עיתון סיכום המשחק</p>
+          </div>
+        </div>
+        <button
+          id="closeUploadModalBtn"
+          type="button"
+          class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form id="matchForm" class="p-5 sm:p-7 space-y-5">
+        <input type="hidden" id="editingMatchId" value="" />
+
+        <!-- Validation Error Banner -->
+        <div id="formErrorBanner" class="hidden bg-rose-500/15 border border-rose-500/40 text-rose-200 px-4 py-3 rounded-2xl text-xs sm:text-sm flex items-center gap-2.5">
+          <svg class="w-5 h-5 text-rose-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span id="formErrorText">אנא מלאו את כל השדות הנדרשים</span>
+        </div>
+
+        <!-- Row 1: Date + MVP Name + Optional Title -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label for="matchDateInput" class="block text-xs font-bold text-slate-300 mb-1.5">
+              תאריך המשחק <span class="text-rose-400">*</span>
+            </label>
+            <input
+              id="matchDateInput"
+              type="date"
+              required
+              class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            />
+            <p id="formattedDatePreview" class="text-[11px] text-emerald-400 mt-1 font-medium"></p>
+          </div>
+
+          <div>
+            <label for="motmNameInput" class="block text-xs font-bold text-amber-300 mb-1.5">
+              שם שחקן המשחק (אופציונלי)
+            </label>
+            <input
+              id="motmNameInput"
+              type="text"
+              maxlength="40"
+              placeholder="לדוגמה: עומר לוי"
+              class="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+            />
+          </div>
+
+          <div>
+            <label for="matchTitleInput" class="block text-xs font-bold text-slate-300 mb-1.5">
+              כותרת / תוצאה (אופציונלי)
+            </label>
+            <input
+              id="matchTitleInput"
+              type="text"
+              maxlength="55"
+              placeholder="לדוגמה: מחזור 14 • 5:4 דרמטי"
+              class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+        </div>
+
+        <!-- Row 2: Dual Image Drop Zones -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+
+          <!-- 1. Man of the Match Photo Upload -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+              <span>תמונת שחקן המשחק</span>
+              <span class="text-rose-400">*</span>
+            </label>
+
+            <div
+              id="motmDropZone"
+              class="relative group border-2 border-dashed border-amber-500/35 hover:border-amber-400 bg-slate-950/70 rounded-2xl p-4 text-center transition-all cursor-pointer min-h-[220px] flex flex-col items-center justify-center overflow-hidden"
+            >
+              <input id="motmFileInput" type="file" accept="image/*" class="hidden" />
+
+              <!-- Empty Drop Prompt -->
+              <div id="motmPrompt" class="space-y-2 pointer-events-none">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                    <circle cx="9" cy="9" r="2"></circle>
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                  </svg>
+                </div>
+                <p class="text-sm font-bold text-slate-200">גררו תמונה לכאן או לחצו לבחירה</p>
+                <p class="text-xs text-slate-500">JPG, PNG, WEBP • מותאם אוטומטית</p>
+              </div>
+
+              <!-- Preview Container -->
+              <div id="motmPreviewWrapper" class="hidden w-full h-full flex flex-col items-center">
+                <img id="motmPreviewImg" src="" alt="תצוגה מקדימה שחקן המשחק" class="max-h-48 w-auto rounded-xl object-contain shadow-lg" />
+                <div class="mt-3 flex items-center gap-2.5">
+                  <span id="motmSizeBadge" class="text-[11px] bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full font-semibold">מוכן</span>
+                  <button
+                    id="changeMotmBtn"
+                    type="button"
+                    class="text-xs font-bold px-3 py-1 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
+                  >
+                    החלף תמונה
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Match Summary Newspaper Photo Upload -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                <path d="M18 14h-8"></path>
+                <path d="M15 18h-5"></path>
+                <path d="M10 6h8v4h-8V6Z"></path>
+              </svg>
+              <span>תמונת עיתון סיכום המשחק</span>
+              <span class="text-rose-400">*</span>
+            </label>
+
+            <div
+              id="newsDropZone"
+              class="relative group border-2 border-dashed border-emerald-500/35 hover:border-emerald-400 bg-slate-950/70 rounded-2xl p-4 text-center transition-all cursor-pointer min-h-[220px] flex flex-col items-center justify-center overflow-hidden"
+            >
+              <input id="newsFileInput" type="file" accept="image/*" class="hidden" />
+
+              <!-- Empty Drop Prompt -->
+              <div id="newsPrompt" class="space-y-2 pointer-events-none">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                    <path d="M10 6h8v4h-8V6Z"></path>
+                  </svg>
+                </div>
+                <p class="text-sm font-bold text-slate-200">גררו את עיתון הסיכום או לחצו לבחירה</p>
+                <p class="text-xs text-slate-500">נשמר באיכות חדה לקריאת כל הכתבות</p>
+              </div>
+
+              <!-- Preview Container -->
+              <div id="newsPreviewWrapper" class="hidden w-full h-full flex flex-col items-center">
+                <img id="newsPreviewImg" src="" alt="תצוגה מקדימה עיתון סיכום" class="max-h-48 w-auto rounded-xl object-contain shadow-lg" />
+                <div class="mt-3 flex items-center gap-2.5">
+                  <span id="newsSizeBadge" class="text-[11px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-semibold">מוכן</span>
+                  <button
+                    id="changeNewsBtn"
+                    type="button"
+                    class="text-xs font-bold px-3 py-1 rounded-lg bg-slate-800 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-colors"
+                  >
+                    החלף תמונה
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="flex flex-wrap items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <button
+            id="cancelUploadModalBtn"
+            type="button"
+            class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+          >
+            ביטול
+          </button>
+          <button
+            id="submitMatchBtn"
+            type="submit"
+            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl emerald-gradient hover:brightness-110 text-slate-950 font-display font-bold text-sm sm:text-base shadow-emerald-glow transition-all disabled:opacity-50"
+          >
+            <svg id="submitSpinner" class="hidden w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span id="submitBtnText">פרסם מחזור בארכיון</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== FULLSCREEN NEWSPAPER / MVP LIGHTBOX ==================== -->
+  <div id="lightboxModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col">
+
+    <!-- Lightbox Top Toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3 bg-slate-900/90 border-b border-slate-800 z-10">
+      <div class="flex items-center gap-3 min-w-0">
+        <span id="lightboxBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          עיתון סיכום
+        </span>
+        <div class="min-w-0">
+          <h4 id="lightboxTitle" class="font-display text-sm sm:text-base font-bold text-white truncate">כותרת</h4>
+          <p id="lightboxDate" class="text-xs text-slate-400">תאריך</p>
+        </div>
+      </div>
+
+      <!-- Zoom, Switch & Download Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Switch between MVP and Newspaper inside Lightbox -->
+        <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+          <button
+            id="lbSwitchMotmBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+          >
+            שחקן המשחק
+          </button>
+          <button
+            id="lbSwitchNewsBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+          >
+            העיתון
+          </button>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="inline-flex items-center rounded-xl bg-slate-950 border border-slate-800 p-1">
+          <button
+            type="button"
+            data-zoom="1"
+            class="lb-zoom-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+          >
+            1x
+          </button>
+          <button
+            type="button"
+            data-zoom="1.5"
+            class="lb-zoom-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+          >
+            1.5x
+          </button>
+          <button
+            type="button"
+            data-zoom="2.2"
+            class="lb-zoom-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+          >
+            2.2x
+          </button>
+        </div>
+
+        <!-- Download Image Button -->
+        <button
+          id="lbDownloadBtn"
+          type="button"
+          title="הורד תמונה למכשיר"
+          class="p-2.5 rounded-xl bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-slate-200 transition-colors"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+
+        <!-- Close Lightbox -->
+        <button
+          id="closeLightboxBtn"
+          type="button"
+          title="סגור (ESC)"
+          class="p-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white transition-colors"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Interactive Zoom & Pan Canvas Stage -->
+    <div id="lightboxStage" class="lightbox-img-stage relative flex-1 overflow-hidden flex items-center justify-center p-4">
+      <img
+        id="lightboxImage"
+        src=""
+        alt="תצוגה מוגדלת"
+        draggable="false"
+        class="max-h-full max-w-full object-contain rounded-xl shadow-2xl transition-transform duration-150 ease-out"
+      />
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/85 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs text-slate-300 pointer-events-none">
+        לחצו פעמיים להגדלה • גררו להזזה נוחה לקריאת העיתון
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DELETE CONFIRMATION MODAL ==================== -->
+  <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-display text-lg font-extrabold text-white">מחיקת מחזור מהארכיון</h3>
+          <p class="text-xs text-slate-400">פעולה זו תסיר את המחזור ואת העיתון שלו</p>
+        </div>
+      </div>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        האם אתם בטוחים שברצונכם למחוק את המחזור הזה? לא ניתן לשחזר מחיקה לאחר האישור.
+      </p>
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button
+          id="cancelDeleteBtn"
+          type="button"
+          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+        >
+          ביטול
+        </button>
+        <button
+          id="confirmDeleteBtn"
+          type="button"
+          class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold transition-colors"
+        >
+          כן, מחק מחזור
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CLOUD SETTINGS MODAL (FIREBASE REAL-TIME SYNC) ==================== -->
+  <div id="cloudSettingsModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-xl w-full p-5 sm:p-6 space-y-5 shadow-2xl my-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-lg font-extrabold text-white">חיבור שמירה בענן לכל החברים</h3>
+            <p class="text-xs text-slate-400">חינמי לגמרי • כל תמונה שתעלו תישמר ותופיע אצל כולם</p>
+          </div>
+        </div>
+        <button id="closeCloudModalBtn" type="button" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Preview Environment Info Banner (shown only inside preview when no external config is set yet) -->
+      <div id="previewCloudNotice" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs text-amber-200 leading-relaxed">
+        כרגע האתר מחובר לענן הזמני של חלון התצוגה. כדי שהשמירה האוטומטית תעבוד גם <strong>אחרי שתעלו את האתר לכתובת משלכם באינטרנט</strong>, חברו פרויקט חינמי של Google Firebase לפי 4 השלבים למטה:
+      </div>
+
+      <!-- Setup View (when external Firebase is not connected yet) -->
+      <div id="cloudSetupView" class="space-y-4">
+        <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-2.5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p class="font-bold text-sky-300">הגדרה חד-פעמית (2 דקות, חינם ללא כרטיס אשראי):</p>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+            <li>היכנסו ל-<a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline font-bold">console.firebase.google.com</a> ולחצו <strong>Add project</strong> (תנו שם כמו <code>haramaton</code>).</li>
+            <li>בתפריט השמאלי: <strong>Build ← Firestore Database</strong> ← לחצו <strong>Create database</strong> ← בחרו <strong>Start in test mode</strong> ← <strong>Create</strong>.</li>
+            <li>בתפריט השמאלי: <strong>Build ← Authentication</strong> ← לחצו <strong>Get started</strong> ← הפעילו את <strong>Anonymous</strong> ולחצו <strong>Save</strong>.</li>
+            <li>לחצו על גלגל השיניים למעלה ← <strong>Project settings</strong> ← למטה תחת <em>Your apps</em> לחצו על אייקון <strong>&lt;/&gt;</strong> (Web), תנו שם והעתיקו את כל הקוד שמופיע (כולל <code>const firebaseConfig = ...</code>).</li>
+          </ol>
+        </div>
+
+        <div>
+          <label for="firebaseConfigPasteInput" class="block text-xs font-bold text-slate-300 mb-1.5">
+            הדביקו כאן את הקוד שהעתקתם מ-Firebase (כמו שהוא, בלי לשנות כלום):
+          </label>
+          <textarea
+            id="firebaseConfigPasteInput"
+            rows="5"
+            dir="ltr"
+            placeholder="const firebaseConfig = {&#10;  apiKey: &quot;AIzaSy...&quot;,&#10;  authDomain: &quot;haramaton.firebaseapp.com&quot;,&#10;  projectId: &quot;haramaton&quot;,&#10;  ...&#10;};"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-2xl p-3 text-xs font-mono text-sky-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+          ></textarea>
+        </div>
+
+        <p id="cloudConfigStatus" class="text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 hidden"></p>
+
+        <button
+          id="connectFirebaseBtn"
+          type="button"
+          class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-display font-bold text-sm sm:text-base transition-all disabled:opacity-50"
+        >
+          <svg id="connectFirebaseSpinner" class="hidden w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <span id="connectFirebaseBtnText">הפעל ושמור חיבור ענן</span>
+        </button>
+      </div>
+
+      <!-- Connected View (when external Firebase is active) -->
+      <div id="cloudConnectedView" class="hidden space-y-4">
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-2.5">
+          <div class="flex items-center gap-2 text-emerald-300 font-bold text-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>השמירה האוטומטית בענן מחוברת ופעילה!</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            פרויקט מחובר: <strong id="connectedProjectIdLabel" class="text-emerald-300 font-mono"></strong>.
+            מעכשיו כל מחזור שתעלו נשמר אוטומטית בענן. לחצו על <strong>״הורד קובץ להעלאה״</strong> בראש האתר והעלו את הקובץ לרשת — החיבור הזה כבר מוטמע בתוכו עבור כל החברים!
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <button
+            id="disconnectFirebaseBtn"
+            type="button"
+            class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 text-xs font-semibold transition-colors"
+          >
+            החלף / נתק חיבור ענן
+          </button>
+          <button
+            id="closeCloudConnectedBtn"
+            type="button"
+            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold"
+          >
+            סגור
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SAVE & DOWNLOAD SITE MODAL ==================== -->
+  <div id="backupModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-lg font-extrabold text-white">הורדת קובץ האתר להעלאה לאינטרנט</h3>
+            <p class="text-xs text-slate-400">כולל את כל המחזורים והגדרות הענן שהזנתם</p>
+          </div>
+        </div>
+        <button id="closeBackupModalBtn" type="button" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Standalone HTML with embedded data & cloud config -->
+      <div class="bg-slate-950/90 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">קובץ מוכן לאחסון (index.html)</span>
+          <span id="backupMatchCountBadge" class="text-xs text-slate-400">0 מחזורים כלולים בקובץ</span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          לחצו למטה כדי להוריד את הקובץ <code class="text-emerald-300">index.html</code> כשהוא כבר כולל בתוכו את כל התמונות שהעליתם ואת חיבור הענן שלכם. לאחר ההורדה, העלו את הקובץ לכל שירות אחסון (כמו <strong>Netlify</strong>, <strong>Vercel</strong> או דומיין פרטי) — והאתר באוויר!
+        </p>
+        <button
+          id="downloadStandaloneHtmlBtn"
+          type="button"
+          class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl emerald-gradient hover:brightness-110 text-slate-950 font-display font-bold text-sm shadow-emerald-glow transition-all"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>הורד קובץ אתר מוכן להעלאה (index.html)</span>
+        </button>
+      </div>
+
+      <!-- Optional Local File Backup -->
+      <details class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 text-xs text-slate-400">
+        <summary class="cursor-pointer font-bold text-slate-300 select-none">אפשרויות גיבוי מתקדמות למחשב</summary>
+        <div class="mt-3 flex flex-wrap items-center gap-2.5">
+          <button
+            id="exportJsonBtn"
+            type="button"
+            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-colors"
+          >
+            <span>שמור עותק גיבוי למחשב</span>
+          </button>
+          <button
+            id="importJsonBtn"
+            type="button"
+            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold transition-colors"
+          >
+            <span>שחזר עותק גיבוי</span>
+          </button>
+          <input id="importJsonInput" type="file" accept=".json,application/json" class="hidden" />
+        </div>
+      </details>
+
+      <div class="flex justify-end pt-1">
+        <button
+          id="closeBackupFooterBtn"
+          type="button"
+          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium"
+        >
+          סגור
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST NOTIFICATION ==================== -->
+  <div id="toastContainer" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center gap-2 w-full max-w-md px-4"></div>
+
+  <!-- Preloaded Archive & Cloud Payload (populated automatically when exporting standalone HTML) -->
+  <script id="preloadedArchiveData">window.__PRELOADED_ARCHIVE__ = null;</script>
+  <script id="embeddedFirebaseConfigData">window.__EMBEDDED_FIREBASE_CONFIG__ = {"apiKey":"AIzaSyC7QF37f4JVlB2EW4L-dWbIe-1h0HktuIY","authDomain":"haramaton.firebaseapp.com","projectId":"haramaton","storageBucket":"haramaton.firebasestorage.app","messagingSenderId":"912941522982","appId":"1:912941522982:web:afd1d9bae2c7c35cc186e7","measurementId":"G-PXRFJKT1NH"};</script>
+  <!-- ==================== APPLICATION LOGIC (SYNCHRONOUS + FIREBASE REAL-TIME CLOUD SYNC) ==================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // -------------------- 1. APPLICATION STATE --------------------
+      var CUSTOM_FIREBASE_STORAGE_KEY = 'haramaton_custom_firebase_config_v1';
+      var LOCAL_SETTINGS_FALLBACK_KEY = 'haramaton_settings_fallback';
+      var LOCAL_MATCHES_FALLBACK_KEY = 'haramaton_matches_fallback';
+
+      var allMatches = [];
+      var leagueTitle = 'הרמתון';
+      var sortNewestFirst = true;
+      var searchQuery = '';
+      var selectedMonthFilter = 'ALL';
+
+      // Upload / Edit Form State
+      var compressedMotmDataUrl = '';
+      var compressedNewsDataUrl = '';
+      var pendingDeleteId = null;
+
+      // Cloud Sync State ('local' | 'preview' | 'custom')
+      var cloudState = {
+        mode: 'local',
+        ready: false,
+        projectId: '',
+        config: null,
+        db: null,
+        auth: null,
+        fsMod: null,
+        appId: 'haramaton-live',
+        unsubMatches: null,
+        unsubSettings: null
+      };
+
+      // Lightbox State
+      var lightboxMatch = null;
+      var lightboxMode = 'newspaper'; // 'motm' | 'newspaper'
+      var lbZoom = 1;
+      var lbTranslateX = 0;
+      var lbTranslateY = 0;
+      var isDraggingLb = false;
+      var dragStartX = 0;
+      var dragStartY = 0;
+
+      // -------------------- 2. INDEXEDDB + LOCALSTORAGE FALLBACK ENGINE --------------------
+      var DB_NAME = 'HaramatonArchiveDB';
+      var DB_VERSION = 1;
+      var STORE_MATCHES = 'matches';
+      var STORE_SETTINGS = 'settings';
+
+      function openIndexedDB() {
+        return new Promise(function (resolve, reject) {
+          if (!window.indexedDB) {
+            reject(new Error('IndexedDB unavailable'));
+            return;
+          }
+          var request = window.indexedDB.open(DB_NAME, DB_VERSION);
+          request.onupgradeneeded = function (event) {
+            var db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_MATCHES)) {
+              db.createObjectStore(STORE_MATCHES, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
+              db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+            }
+          };
+          request.onsuccess = function (event) {
+            resolve(event.target.result);
+          };
+          request.onerror = function (event) {
+            reject(event.target.error || new Error('IndexedDB open failed'));
+          };
+        });
+      }
+
+      var LocalDB = {
+        getSettings: async function () {
+          var fallback = { title: 'הרמתון', seeded: false };
+          try {
+            var raw = localStorage.getItem(LOCAL_SETTINGS_FALLBACK_KEY);
+            if (raw) {
+              var parsed = JSON.parse(raw);
+              fallback = Object.assign(fallback, parsed);
+            }
+          } catch (e) {}
+
+          try {
+            var db = await openIndexedDB();
+            return await new Promise(function (resolve) {
+              var tx = db.transaction(STORE_SETTINGS, 'readonly');
+              var store = tx.objectStore(STORE_SETTINGS);
+              var req = store.get('app_settings');
+              req.onsuccess = function () {
+                if (req.result && req.result.value) {
+                  resolve(Object.assign(fallback, req.result.value));
+                } else {
+                  resolve(fallback);
+                }
+              };
+              req.onerror = function () {
+                resolve(fallback);
+              };
+            });
+          } catch (e) {
+            return fallback;
+          }
+        },
+
+        saveSettings: async function (partial) {
+          var current = await LocalDB.getSettings();
+          var updated = Object.assign({}, current, partial);
+          try {
+            localStorage.setItem(LOCAL_SETTINGS_FALLBACK_KEY, JSON.stringify(updated));
+          } catch (e) {}
+
+          try {
+            var db = await openIndexedDB();
+            await new Promise(function (resolve) {
+              var tx = db.transaction(STORE_SETTINGS, 'readwrite');
+              var store = tx.objectStore(STORE_SETTINGS);
+              store.put({ key: 'app_settings', value: updated });
+              tx.oncomplete = function () { resolve(); };
+              tx.onerror = function () { resolve(); };
+            });
+          } catch (e) {}
+          return updated;
+        },
+
+        getAllMatches: async function () {
+          try {
+            var db = await openIndexedDB();
+            var records = await new Promise(function (resolve, reject) {
+              var tx = db.transaction(STORE_MATCHES, 'readonly');
+              var store = tx.objectStore(STORE_MATCHES);
+              var req = store.getAll();
+              req.onsuccess = function () { resolve(req.result || []); };
+              req.onerror = function () { reject(req.error); };
+            });
+            return records;
+          } catch (e) {
+            try {
+              var raw = localStorage.getItem(LOCAL_MATCHES_FALLBACK_KEY);
+              return raw ? JSON.parse(raw) : [];
+            } catch (err) {
+              return [];
+            }
+          }
+        },
+
+        saveMatch: async function (matchRecord) {
+          try {
+            var db = await openIndexedDB();
+            await new Promise(function (resolve, reject) {
+              var tx = db.transaction(STORE_MATCHES, 'readwrite');
+              var store = tx.objectStore(STORE_MATCHES);
+              store.put(matchRecord);
+              tx.oncomplete = function () { resolve(); };
+              tx.onerror = function () { reject(tx.error); };
+            });
+          } catch (e) {
+            try {
+              var existing = JSON.parse(localStorage.getItem(LOCAL_MATCHES_FALLBACK_KEY) || '[]');
+              var idx = existing.findIndex(function (m) { return m.id === matchRecord.id; });
+              if (idx >= 0) existing[idx] = matchRecord;
+              else existing.unshift(matchRecord);
+              localStorage.setItem(LOCAL_MATCHES_FALLBACK_KEY, JSON.stringify(existing));
+            } catch (err) {}
+          }
+        },
+
+        deleteMatch: async function (id) {
+          try {
+            var db = await openIndexedDB();
+            await new Promise(function (resolve, reject) {
+              var tx = db.transaction(STORE_MATCHES, 'readwrite');
+              var store = tx.objectStore(STORE_MATCHES);
+              store.delete(id);
+              tx.oncomplete = function () { resolve(); };
+              tx.onerror = function () { reject(tx.error); };
+            });
+          } catch (e) {
+            try {
+              var existing = JSON.parse(localStorage.getItem(LOCAL_MATCHES_FALLBACK_KEY) || '[]');
+              var filtered = existing.filter(function (m) { return m.id !== id; });
+              localStorage.setItem(LOCAL_MATCHES_FALLBACK_KEY, JSON.stringify(filtered));
+            } catch (err) {}
+          }
+        }
+      };
+
+      // -------------------- 3. GENERAL UI & FORMATTING HELPERS --------------------
+      function bindEvent(elementId, eventName, handler) {
+        var el = document.getElementById(elementId);
+        if (el) {
+          el.addEventListener(eventName, handler);
+        }
+        return el;
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function generateUniqueId() {
+        return 'match_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      }
+
+      function getDateOffsetString(daysOffset) {
+        var d = new Date();
+        d.setDate(d.getDate() + (daysOffset || 0));
+        var year = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+      }
+
+      var HEBREW_MONTHS = [
+        'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+        'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
+      ];
+
+      var HEBREW_DAYS = [
+        'יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי',
+        'יום חמישי', 'יום שישי', 'שבת'
+      ];
+
+      function parseIsoDateLocal(isoStr) {
+        if (!isoStr || typeof isoStr !== 'string') return null;
+        var parts = isoStr.split('-');
+        if (parts.length !== 3) return null;
+        var y = parseInt(parts[0], 10);
+        var m = parseInt(parts[1], 10) - 1;
+        var d = parseInt(parts[2], 10);
+        var dateObj = new Date(y, m, d);
+        if (isNaN(dateObj.getTime())) return null;
+        return dateObj;
+      }
+
+      function formatHebrewDate(isoStr) {
+        var dateObj = parseIsoDateLocal(isoStr);
+        if (!dateObj) return isoStr || 'ללא תאריך';
+        var dayName = HEBREW_DAYS[dateObj.getDay()];
+        var dayNum = dateObj.getDate();
+        var monthName = HEBREW_MONTHS[dateObj.getMonth()];
+        var year = dateObj.getFullYear();
+        return dayName + ', ' + dayNum + ' ב' + monthName + ' ' + year;
+      }
+
+      function getMonthFilterInfo(isoStr) {
+        var dateObj = parseIsoDateLocal(isoStr);
+        if (!dateObj) return null;
+        var y = dateObj.getFullYear();
+        var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        return {
+          key: y + '-' + m,
+          label: HEBREW_MONTHS[dateObj.getMonth()] + ' ' + y
+        };
+      }
+
+      function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        var toast = document.createElement('div');
+        var isError = type === 'error';
+        toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold transition-all duration-300 transform translate-y-2 opacity-0 ' +
+          (isError
+            ? 'bg-slate-900/95 border-rose-500/50 text-rose-200'
+            : 'bg-slate-900/95 border-emerald-500/50 text-emerald-200');
+
+        toast.innerHTML =
+          '<span class="w-2.5 h-2.5 rounded-full shrink-0 ' + (isError ? 'bg-rose-400' : 'bg-emerald-400') + '"></span>' +
+          '<span>' + escapeHtml(message) + '</span>';
+
+        container.appendChild(toast);
+        requestAnimationFrame(function () {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        setTimeout(function () {
+          toast.classList.add('translate-y-2', 'opacity-0');
+          setTimeout(function () {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        }, 3400);
+      }
+
+      function applyLeagueTitle(newTitle) {
+        leagueTitle = (newTitle && newTitle.trim()) ? newTitle.trim() : 'הרמתון';
+        var titleEl = document.getElementById('leagueTitleText');
+        if (titleEl) titleEl.textContent = leagueTitle;
+        document.title = leagueTitle + ' • שחקן המשחק ועיתון הסיכום';
+      }
+
+      function updateConnectionBadge(mode) {
+        var badge = document.getElementById('connectionBadge');
+        var dot = document.getElementById('connectionDot');
+        var text = document.getElementById('connectionText');
+        if (!badge || !dot || !text) return;
+
+        if (mode === 'custom') {
+          badge.className = 'mt-1 inline-flex items-center gap-1.5 text-xs text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
+          text.textContent = 'שמירה אוטומטית בענן פעילה • מוכן להעלאה לאינטרנט';
+        } else if (mode === 'preview') {
+          badge.className = 'mt-1 inline-flex items-center gap-1.5 text-xs text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
+          text.textContent = 'מחובר לענן התצוגה • לחץ לחיבור ענן קבוע לאתר שלך';
+        } else {
+          badge.className = 'mt-1 inline-flex items-center gap-1.5 text-xs text-sky-300 bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-sky-400';
+          text.textContent = 'שמירה מקומית • לחץ להפעלת שמירה אוטומטית בענן';
+        }
+      }
+
+      // -------------------- 4. SAMPLE ARCHIVE ENTRIES GENERATOR --------------------
+      function drawRoundedRectPath(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      }
+
+      function generateSampleCardDataUrl(options) {
+        var canvas = document.createElement('canvas');
+        canvas.width = options.width;
+        canvas.height = options.height;
+        var ctx = canvas.getContext('2d');
+
+        // Background gradient
+        var grad = ctx.createLinearGradient(0, 0, options.width, options.height);
+        grad.addColorStop(0, options.bg1);
+        grad.addColorStop(1, options.bg2);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, options.width, options.height);
+
+        // Decorative border
+        ctx.strokeStyle = options.accent;
+        ctx.lineWidth = 8;
+        drawRoundedRectPath(ctx, 20, 20, options.width - 40, options.height - 40, 24);
+        ctx.stroke();
+
+        // Header badge
+        ctx.fillStyle = options.accent;
+        drawRoundedRectPath(ctx, options.width / 2 - 150, 50, 300, 44, 22);
+        ctx.fill();
+
+        ctx.fillStyle = '#090d16';
+        ctx.font = 'bold 22px Heebo, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(options.badgeText, options.width / 2, 79);
+
+        // Main Headline
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 38px Heebo, sans-serif';
+        ctx.fillText(options.headline, options.width / 2, 165);
+
+        // Subtitle
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '600 24px Heebo, sans-serif';
+        ctx.fillText(options.subline, options.width / 2, 215);
+
+        // Newspaper lines / columns visual
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        drawRoundedRectPath(ctx, 55, 255, options.width - 110, options.height - 320, 18);
+        ctx.fill();
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '500 20px Heebo, sans-serif';
+        var lines = options.bodyLines || [];
+        for (var i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], options.width / 2, 310 + i * 42);
+        }
+
+        return canvas.toDataURL('image/jpeg', 0.88);
+      }
+
+      function buildSampleEntries() {
+        var date1 = getDateOffsetString(-2);
+        var date2 = getDateOffsetString(-9);
+
+        var motm1 = generateSampleCardDataUrl({
+          width: 700,
+          height: 560,
+          bg1: '#1e1b0b',
+          bg2: '#0f172a',
+          accent: '#f59e0b',
+          badgeText: '★ שחקן המשחק • הרמתון ★',
+          headline: 'עומר לוי',
+          subline: 'שלושער ובישול מכריע בדקה ה-88',
+          bodyLines: [
+            'ציון עיתון: 9.5 • מלך השערים של המחזור',
+            '״הופעה בלתי נשכחת על הדשא של הרמתון״'
+          ]
+        });
+
+        var news1 = generateSampleCardDataUrl({
+          width: 960,
+          height: 620,
+          bg1: '#062019',
+          bg2: '#0f172a',
+          accent: '#10b981',
+          badgeText: 'ידיעות הרמתון • גיליון סיכום',
+          headline: 'מהפך מטורף בדרך ל-5:4!',
+          subline: 'סיכום המחזור השבועי • כל הציונים והכותרות',
+          bodyLines: [
+            'הקבוצה הלבנה חזרה מפיגור 3:1 במחצית השנייה',
+            'שער ניצחון דרמטי בתוספת הזמן הקפיץ את כולם',
+            'לחצו על העיתון לקריאה בהגדלה (דוגמה להמחשה)'
+          ]
+        });
+
+        var motm2 = generateSampleCardDataUrl({
+          width: 700,
+          height: 560,
+          bg1: '#1c1917',
+          bg2: '#090d16',
+          accent: '#fbbf24',
+          badgeText: '★ שחקן המשחק • הרמתון ★',
+          headline: 'דניאל כהן',
+          subline: 'חומה בצורה בהגנה ושער מ-25 מטר',
+          bodyLines: [
+            'ציון עיתון: 9.0 • אפס טעויות לאורך כל הערב',
+            '״שלט בכל כדור גובה והוביל את הקבוצה לניצחון״'
+          ]
+        });
+
+        var news2 = generateSampleCardDataUrl({
+          width: 960,
+          height: 620,
+          bg1: '#091a24',
+          bg2: '#0b1120',
+          accent: '#34d399',
+          badgeText: 'ידיעות הרמתון • מהדורת סוף השבוע',
+          headline: 'ערב של גולים ודרמות עד השריקה',
+          subline: 'הכותרות החמות מחדר ההלבשה של הרמתון',
+          bodyLines: [
+            'הגנת הברזל סגרה את המשחק ברבע השעה האחרונה',
+            'טבלת המצטיינים מתחממת לקראת המחזור הבא',
+            'העלו את התמונות שלכם דרך כפתור ״העלאת שבוע חדש״'
+          ]
+        });
+
+        return [
+          {
+            id: 'sample_week_2',
+            matchDate: date1,
+            title: 'מחזור פתיחה • 5:4 דרמטי',
+            motmName: 'עומר לוי',
+            motmImage: motm1,
+            newspaperImage: news1,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          },
+          {
+            id: 'sample_week_1',
+            matchDate: date2,
+            title: 'מחזור טרום-עונה • 3:1 חלק',
+            motmName: 'דניאל כהן',
+            motmImage: motm2,
+            newspaperImage: news2,
+            createdAt: Date.now() - 86400000,
+            updatedAt: Date.now() - 86400000
+          }
+        ];
+      }
+
+      // -------------------- 5. STATS, FILTERS & FEED RENDERING --------------------
+      function updateStatsAndFilters() {
+        var totalEl = document.getElementById('statTotalWeeks');
+        var latestEl = document.getElementById('statLatestDate');
+        var topPlayerEl = document.getElementById('statTopPlayer');
+        var monthBar = document.getElementById('monthFilterBar');
+
+        if (totalEl) totalEl.textContent = String(allMatches.length);
+
+        if (allMatches.length === 0) {
+          if (latestEl) latestEl.textContent = 'טרם הועלו משחקים';
+          if (topPlayerEl) topPlayerEl.textContent = '—';
+          if (monthBar) {
+            monthBar.innerHTML = '';
+            monthBar.classList.add('hidden');
+          }
+          return;
+        }
+
+        // Latest match by date
+        var sortedByDateDesc = allMatches.slice().sort(function (a, b) {
+          return (b.matchDate || '').localeCompare(a.matchDate || '');
+        });
+        if (latestEl) {
+          latestEl.textContent = formatHebrewDate(sortedByDateDesc[0].matchDate);
+        }
+
+        // Top MVP leaderboard calculation
+        var counts = {};
+        var displayNames = {};
+        allMatches.forEach(function (m) {
+          var rawName = (m.motmName || '').trim();
+          if (!rawName) return;
+          var key = rawName.toLowerCase();
+          counts[key] = (counts[key] || 0) + 1;
+          if (!displayNames[key]) displayNames[key] = rawName;
+        });
+
+        var bestKey = null;
+        var bestCount = 0;
+        Object.keys(counts).forEach(function (k) {
+          if (counts[k] > bestCount) {
+            bestCount = counts[k];
+            bestKey = k;
+          }
+        });
+
+        if (topPlayerEl) {
+          if (bestKey) {
+            var suffix = bestCount === 1 ? 'זכייה אחת' : bestCount + ' זכיות';
+            topPlayerEl.textContent = displayNames[bestKey] + ' (' + suffix + ')';
+          } else {
+            topPlayerEl.textContent = 'הזינו שמות מצטיינים לדירוג';
+          }
+        }
+
+        // Build Month Filter Pills
+        if (monthBar) {
+          var monthMap = {};
+          sortedByDateDesc.forEach(function (m) {
+            var info = getMonthFilterInfo(m.matchDate);
+            if (info && !monthMap[info.key]) {
+              monthMap[info.key] = info.label;
+            }
+          });
+
+          var monthKeys = Object.keys(monthMap);
+          if (selectedMonthFilter !== 'ALL' && !monthMap[selectedMonthFilter]) {
+            selectedMonthFilter = 'ALL';
+          }
+
+          if (monthKeys.length <= 1) {
+            monthBar.innerHTML = '';
+            monthBar.classList.add('hidden');
+          } else {
+            monthBar.classList.remove('hidden');
+            var pillsHtml =
+              '<button type="button" data-month="ALL" class="month-pill shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ' +
+              (selectedMonthFilter === 'ALL'
+                ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+                : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700') +
+              '">כל החודשים (' + allMatches.length + ')</button>';
+
+            monthKeys.forEach(function (mKey) {
+              var active = selectedMonthFilter === mKey;
+              pillsHtml +=
+                '<button type="button" data-month="' + escapeHtml(mKey) + '" class="month-pill shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ' +
+                (active
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+                  : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700') +
+                '">' + escapeHtml(monthMap[mKey]) + '</button>';
+            });
+
+            monthBar.innerHTML = pillsHtml;
+            monthBar.querySelectorAll('.month-pill').forEach(function (pill) {
+              pill.addEventListener('click', function () {
+                selectedMonthFilter = pill.dataset.month || 'ALL';
+                updateStatsAndFilters();
+                renderMatchesFeed();
+              });
+            });
+          }
+        }
+      }
+
+      function renderMatchesFeed() {
+        var emptyState = document.getElementById('emptyState');
+        var noResultsState = document.getElementById('noFilterResultsState');
+        var feedEl = document.getElementById('weeklyFeed');
+        if (!feedEl) return;
+
+        if (allMatches.length === 0) {
+          if (emptyState) emptyState.classList.remove('hidden');
+          if (noResultsState) noResultsState.classList.add('hidden');
+          feedEl.innerHTML = '';
+          return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        var q = searchQuery.trim().toLowerCase();
+        var filtered = allMatches.filter(function (m) {
+          if (selectedMonthFilter !== 'ALL') {
+            var mInfo = getMonthFilterInfo(m.matchDate);
+            if (!mInfo || mInfo.key !== selectedMonthFilter) return false;
+          }
+          if (!q) return true;
+          var hebrewDate = formatHebrewDate(m.matchDate).toLowerCase();
+          var motm = (m.motmName || '').toLowerCase();
+          var title = (m.title || '').toLowerCase();
+          var rawDate = (m.matchDate || '').toLowerCase();
+          return (
+            motm.indexOf(q) !== -1 ||
+            title.indexOf(q) !== -1 ||
+            hebrewDate.indexOf(q) !== -1 ||
+            rawDate.indexOf(q) !== -1
+          );
+        });
+
+        filtered.sort(function (a, b) {
+          var dateCmp = (a.matchDate || '').localeCompare(b.matchDate || '');
+          if (dateCmp === 0) {
+            dateCmp = (a.createdAt || 0) - (b.createdAt || 0);
+          }
+          return sortNewestFirst ? -dateCmp : dateCmp;
+        });
+
+        if (filtered.length === 0) {
+          if (noResultsState) noResultsState.classList.remove('hidden');
+          feedEl.innerHTML = '';
+          return;
+        }
+
+        if (noResultsState) noResultsState.classList.add('hidden');
+
+        var cardsHtml = filtered.map(function (match) {
+          var safeId = escapeHtml(match.id);
+          var safeDate = escapeHtml(formatHebrewDate(match.matchDate));
+          var safeTitle = escapeHtml(match.title || 'סיכום המחזור השבועי');
+          var safeMotmName = escapeHtml(match.motmName || 'כוכב המשחק');
+
+          return (
+            '<article class="bg-slate-900/75 backdrop-blur-md border border-slate-800/90 hover:border-emerald-500/30 rounded-3xl overflow-hidden shadow-xl transition-all">' +
+              '<!-- Card Top Header -->' +
+              '<div class="px-5 sm:px-7 py-4 bg-slate-950/70 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">' +
+                '<div class="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0">' +
+                  '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-bold">' +
+                    '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' +
+                    '<span>' + safeDate + '</span>' +
+                  '</span>' +
+                  '<h2 class="font-display text-base sm:text-xl font-extrabold text-white truncate">' + safeTitle + '</h2>' +
+                '</div>' +
+
+                '<div class="flex items-center gap-2">' +
+                  '<button type="button" data-action="edit" data-id="' + safeId + '" title="ערוך מחזור" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-colors">' +
+                    '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>' +
+                    '<span>עריכה</span>' +
+                  '</button>' +
+                  '<button type="button" data-action="delete" data-id="' + safeId + '" title="מחק מחזור" class="p-2 rounded-xl bg-slate-800/90 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 transition-colors">' +
+                    '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>' +
+                  '</button>' +
+                '</div>' +
+              '</div>' +
+
+              '<!-- Dual Media Grid: MVP + Newspaper -->' +
+              '<div class="p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">' +
+
+                '<!-- Man of the Match Column -->' +
+                '<div class="lg:col-span-5 flex flex-col bg-slate-950/75 border border-amber-500/25 rounded-2xl overflow-hidden shadow-gold-glow">' +
+                  '<div class="px-4 py-3 bg-gradient-to-l from-amber-500/15 to-transparent border-b border-amber-500/20 flex items-center justify-between gap-2">' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                      '<span class="w-7 h-7 rounded-lg gold-gradient text-slate-950 flex items-center justify-center shrink-0">' +
+                        '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>' +
+                      '</span>' +
+                      '<div class="min-w-0">' +
+                        '<p class="text-[11px] font-bold text-amber-400/90 uppercase tracking-wide">שחקן המשחק • MVP</p>' +
+                        '<p class="font-display text-sm sm:text-base font-extrabold text-white truncate">' + safeMotmName + '</p>' +
+                      '</div>' +
+                    '</div>' +
+                    '<button type="button" data-action="lightbox" data-mode="motm" data-id="' + safeId + '" class="text-xs font-bold text-amber-300 hover:text-amber-200 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors shrink-0">הגדל</button>' +
+                  '</div>' +
+                  '<div data-action="lightbox" data-mode="motm" data-id="' + safeId + '" class="relative group flex-1 min-h-[250px] sm:min-h-[300px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden">' +
+                    '<img src="' + (match.motmImage || '') + '" alt="שחקן המשחק - ' + safeMotmName + '" loading="lazy" class="w-full h-full max-h-[380px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />' +
+                    '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">' +
+                      '<span class="px-3 py-1.5 rounded-full bg-slate-950/90 border border-amber-500/40 text-amber-300 text-xs font-bold shadow-lg">לחצו לצפייה במסך מלא</span>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+
+                '<!-- Match Summary Newspaper Column -->' +
+                '<div class="lg:col-span-7 flex flex-col bg-slate-950/75 border border-emerald-500/25 rounded-2xl overflow-hidden">' +
+                  '<div class="px-4 py-3 bg-gradient-to-l from-emerald-500/15 to-transparent border-b border-emerald-500/20 flex items-center justify-between gap-2">' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                      '<span class="w-7 h-7 rounded-lg emerald-gradient text-slate-950 flex items-center justify-center shrink-0">' +
+                        '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M10 6h8v4h-8V6Z"></path></svg>' +
+                      '</span>' +
+                      '<div>' +
+                        '<p class="text-[11px] font-bold text-emerald-400/90 uppercase tracking-wide">עיתון סיכום המשחק</p>' +
+                        '<p class="font-display text-sm sm:text-base font-extrabold text-white">מהדורת המחזור</p>' +
+                      '</div>' +
+                    '</div>' +
+                    '<button type="button" data-action="lightbox" data-mode="newspaper" data-id="' + safeId + '" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-slate-950 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-400 transition-colors shrink-0">' +
+                      '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>' +
+                      '<span>קרא בהגדלה</span>' +
+                    '</button>' +
+                  '</div>' +
+                  '<div data-action="lightbox" data-mode="newspaper" data-id="' + safeId + '" class="relative group flex-1 min-h-[260px] sm:min-h-[320px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden">' +
+                    '<img src="' + (match.newspaperImage || '') + '" alt="עיתון סיכום המשחק - ' + safeDate + '" loading="lazy" class="w-full h-full max-h-[380px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />' +
+                    '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">' +
+                      '<span class="px-3.5 py-1.5 rounded-full bg-slate-950/90 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-lg">לחצו לקריאת הכתבות בזום</span>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+
+              '</div>' +
+            '</article>'
+          );
+        });
+
+        feedEl.innerHTML = cardsHtml.join('');
+      }
+
+      // -------------------- 6. UPLOAD / EDIT MODAL & IMAGE COMPRESSION --------------------
+      function showFormError(msg) {
+        var banner = document.getElementById('formErrorBanner');
+        var text = document.getElementById('formErrorText');
+        if (text) text.textContent = msg;
+        if (banner) banner.classList.remove('hidden');
+      }
+
+      function hideFormError() {
+        var banner = document.getElementById('formErrorBanner');
+        if (banner) banner.classList.add('hidden');
+      }
+
+      function updateFormattedDatePreview() {
+        var input = document.getElementById('matchDateInput');
+        var preview = document.getElementById('formattedDatePreview');
+        if (!input || !preview) return;
+        preview.textContent = input.value ? formatHebrewDate(input.value) : '';
+      }
+
+      function resetDropZonePreviews() {
+        compressedMotmDataUrl = '';
+        compressedNewsDataUrl = '';
+
+        var motmPrompt = document.getElementById('motmPrompt');
+        var motmWrap = document.getElementById('motmPreviewWrapper');
+        var motmImg = document.getElementById('motmPreviewImg');
+        var motmInput = document.getElementById('motmFileInput');
+        if (motmPrompt) motmPrompt.classList.remove('hidden');
+        if (motmWrap) motmWrap.classList.add('hidden');
+        if (motmImg) motmImg.src = '';
+        if (motmInput) motmInput.value = '';
+
+        var newsPrompt = document.getElementById('newsPrompt');
+        var newsWrap = document.getElementById('newsPreviewWrapper');
+        var newsImg = document.getElementById('newsPreviewImg');
+        var newsInput = document.getElementById('newsFileInput');
+        if (newsPrompt) newsPrompt.classList.remove('hidden');
+        if (newsWrap) newsWrap.classList.add('hidden');
+        if (newsImg) newsImg.src = '';
+        if (newsInput) newsInput.value = '';
+      }
+
+      function openNewUploadModal() {
+        hideFormError();
+        resetDropZonePreviews();
+
+        var form = document.getElementById('matchForm');
+        if (form) form.reset();
+
+        document.getElementById('editingMatchId').value = '';
+        document.getElementById('matchDateInput').value = getDateOffsetString(0);
+        updateFormattedDatePreview();
+
+        document.getElementById('uploadModalTitle').textContent = 'העלאת מחזור חדש';
+        document.getElementById('submitBtnText').textContent = 'פרסם מחזור בארכיון';
+
+        var modal = document.getElementById('uploadModal');
+        if (modal) modal.classList.remove('hidden');
+      }
+
+      function openEditModal(match) {
+        hideFormError();
+        resetDropZonePreviews();
+
+        document.getElementById('editingMatchId').value = match.id;
+        document.getElementById('matchDateInput').value = match.matchDate || getDateOffsetString(0);
+        document.getElementById('motmNameInput').value = match.motmName || '';
+        document.getElementById('matchTitleInput').value = match.title || '';
+        updateFormattedDatePreview();
+
+        if (match.motmImage) {
+          compressedMotmDataUrl = match.motmImage;
+          document.getElementById('motmPreviewImg').src = match.motmImage;
+          document.getElementById('motmSizeBadge').textContent = 'תמונה קיימת';
+          document.getElementById('motmPrompt').classList.add('hidden');
+          document.getElementById('motmPreviewWrapper').classList.remove('hidden');
+        }
+
+        if (match.newspaperImage) {
+          compressedNewsDataUrl = match.newspaperImage;
+          document.getElementById('newsPreviewImg').src = match.newspaperImage;
+          document.getElementById('newsSizeBadge').textContent = 'תמונה קיימת';
+          document.getElementById('newsPrompt').classList.add('hidden');
+          document.getElementById('newsPreviewWrapper').classList.remove('hidden');
+        }
+
+        document.getElementById('uploadModalTitle').textContent = 'עריכת פרטי מחזור';
+        document.getElementById('submitBtnText').textContent = 'שמור שינויים';
+
+        var modal = document.getElementById('uploadModal');
+        if (modal) modal.classList.remove('hidden');
+      }
+
+      function closeUploadModal() {
+        var modal = document.getElementById('uploadModal');
+        if (modal) modal.classList.add('hidden');
+        hideFormError();
+      }
+
+      function compressImageFile(file, maxDimension, quality) {
+        return new Promise(function (resolve, reject) {
+          if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+            reject(new Error('אנא בחרו קובץ תמונה תקין (JPG, PNG או WEBP).'));
+            return;
+          }
+
+          var reader = new FileReader();
+          reader.onload = function (evt) {
+            var img = new Image();
+            img.onload = function () {
+              var width = img.width;
+              var height = img.height;
+
+              if (width > maxDimension || height > maxDimension) {
+                if (width >= height) {
+                  height = Math.round((height * maxDimension) / width);
+                  width = maxDimension;
+                } else {
+                  width = Math.round((width * maxDimension) / height);
+                  height = maxDimension;
+                }
+              }
+
+              var canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              var ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+
+              var currentQuality = quality || 0.82;
+              var dataUrl = canvas.toDataURL('image/jpeg', currentQuality);
+              var kbSize = Math.max(1, Math.round((dataUrl.length * 3) / 4 / 1024));
+
+              // Ensure image stays safely under Firestore 1MB combined document limit
+              if (kbSize > 450) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.66);
+                kbSize = Math.max(1, Math.round((dataUrl.length * 3) / 4 / 1024));
+              }
+
+              resolve({ dataUrl: dataUrl, kbSize: kbSize });
+            };
+            img.onerror = function () {
+              reject(new Error('לא ניתן לקרוא את קובץ התמונה. נסו תמונה אחרת.'));
+            };
+            img.src = evt.target.result;
+          };
+          reader.onerror = function () {
+            reject(new Error('שגיאה בטעינת הקובץ מהמכשיר.'));
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function setupImageDropZone(dropZoneId, fileInputId, changeBtnId, maxDim, onProcessed) {
+        var dropZoneEl = document.getElementById(dropZoneId);
+        var fileInputEl = document.getElementById(fileInputId);
+        var changeBtnEl = document.getElementById(changeBtnId);
+        if (!dropZoneEl || !fileInputEl) return;
+
+        dropZoneEl.addEventListener('click', function (e) {
+          if (changeBtnEl && (e.target === changeBtnEl || changeBtnEl.contains(e.target))) {
+            return;
+          }
+          fileInputEl.click();
+        });
+
+        if (changeBtnEl) {
+          changeBtnEl.addEventListener('click', function (e) {
+            e.stopPropagation();
+            fileInputEl.click();
+          });
+        }
+
+        dropZoneEl.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          dropZoneEl.classList.add('border-emerald-400', 'bg-slate-900');
+        });
+
+        dropZoneEl.addEventListener('dragleave', function () {
+          dropZoneEl.classList.remove('border-emerald-400', 'bg-slate-900');
+        });
+
+        dropZoneEl.addEventListener('drop', function (e) {
+          e.preventDefault();
+          dropZoneEl.classList.remove('border-emerald-400', 'bg-slate-900');
+          var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (file) {
+            hideFormError();
+            compressImageFile(file, maxDim, 0.82)
+              .then(onProcessed)
+              .catch(function (err) {
+                showFormError(err.message || 'שגיאה בעיבוד התמונה');
+              });
+          }
+        });
+
+        fileInputEl.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (file) {
+            hideFormError();
+            compressImageFile(file, maxDim, 0.82)
+              .then(onProcessed)
+              .catch(function (err) {
+                showFormError(err.message || 'שגיאה בעיבוד התמונה');
+              });
+          }
+        });
+      }
+
+      // -------------------- 7. FULLSCREEN LIGHTBOX VIEWER --------------------
+      function updateZoomButtonUI() {
+        document.querySelectorAll('.lb-zoom-btn').forEach(function (btn) {
+          var z = parseFloat(btn.dataset.zoom);
+          if (Math.abs(z - lbZoom) < 0.05) {
+            btn.classList.add('bg-emerald-500', 'text-slate-950');
+            btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+          } else {
+            btn.classList.remove('bg-emerald-500', 'text-slate-950');
+            btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+          }
+        });
+      }
+
+      function applyLightboxTransform() {
+        var imgEl = document.getElementById('lightboxImage');
+        var stageEl = document.getElementById('lightboxStage');
+        if (!imgEl) return;
+        imgEl.style.transform = 'translate(' + lbTranslateX + 'px, ' + lbTranslateY + 'px) scale(' + lbZoom + ')';
+        if (stageEl) {
+          if (lbZoom > 1) {
+            stageEl.classList.add('cursor-grab-custom');
+          } else {
+            stageEl.classList.remove('cursor-grab-custom', 'cursor-grabbing-custom');
+          }
+        }
+      }
+
+      function resetLightboxTransform() {
+        lbZoom = 1;
+        lbTranslateX = 0;
+        lbTranslateY = 0;
+        applyLightboxTransform();
+        updateZoomButtonUI();
+      }
+
+      function renderLightboxContent() {
+        if (!lightboxMatch) return;
+        var imgEl = document.getElementById('lightboxImage');
+        var badgeEl = document.getElementById('lightboxBadge');
+        var titleEl = document.getElementById('lightboxTitle');
+        var dateEl = document.getElementById('lightboxDate');
+        var motmTabBtn = document.getElementById('lbSwitchMotmBtn');
+        var newsTabBtn = document.getElementById('lbSwitchNewsBtn');
+
+        var isMotm = lightboxMode === 'motm';
+        if (imgEl) {
+          imgEl.src = isMotm ? (lightboxMatch.motmImage || '') : (lightboxMatch.newspaperImage || '');
+        }
+        if (badgeEl) {
+          if (isMotm) {
+            badgeEl.textContent = 'שחקן המשחק • MVP';
+            badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+          } else {
+            badgeEl.textContent = 'עיתון סיכום';
+            badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+          }
+        }
+        if (titleEl) {
+          titleEl.textContent = isMotm
+            ? (lightboxMatch.motmName || 'כוכב המחזור')
+            : (lightboxMatch.title || 'עיתון סיכום המשחק');
+        }
+        if (dateEl) {
+          dateEl.textContent = formatHebrewDate(lightboxMatch.matchDate);
+        }
+
+        if (motmTabBtn && newsTabBtn) {
+          if (isMotm) {
+            motmTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 transition-colors';
+            newsTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-colors';
+          } else {
+            newsTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition-colors';
+            motmTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-colors';
+          }
+        }
+      }
+
+      function openLightbox(match, mode) {
+        lightboxMatch = match;
+        lightboxMode = mode || 'newspaper';
+        resetLightboxTransform();
+        renderLightboxContent();
+        var lbModal = document.getElementById('lightboxModal');
+        if (lbModal) lbModal.classList.remove('hidden');
+      }
+
+      function closeLightbox() {
+        var lbModal = document.getElementById('lightboxModal');
+        if (lbModal) lbModal.classList.add('hidden');
+        lightboxMatch = null;
+        isDraggingLb = false;
+      }
+
+      // -------------------- 8. REAL-TIME FIREBASE CLOUD SYNC ENGINE --------------------
+      function parseFlexibleFirebaseConfig(rawText) {
+        if (!rawText || typeof rawText !== 'string') return null;
+        var keys = [
+          'apiKey',
+          'authDomain',
+          'projectId',
+          'storageBucket',
+          'messagingSenderId',
+          'appId',
+          'measurementId',
+          'databaseURL'
+        ];
+        var config = {};
+        keys.forEach(function (k) {
+          var regex = new RegExp('["\']?' + k + '["\']?\\s*:\\s*["\']([^"\']+)["\']');
+          var match = rawText.match(regex);
+          if (match && match[1]) {
+            config[k] = match[1].trim();
+          }
+        });
+        if (!config.apiKey || !config.projectId) {
+          return null;
+        }
+        return config;
+      }
+
+      function getSavedExternalFirebaseConfig() {
+        if (window.__EMBEDDED_FIREBASE_CONFIG__ && typeof window.__EMBEDDED_FIREBASE_CONFIG__ === 'object' && window.__EMBEDDED_FIREBASE_CONFIG__.apiKey) {
+          return window.__EMBEDDED_FIREBASE_CONFIG__;
+        }
+        try {
+          var stored = localStorage.getItem(CUSTOM_FIREBASE_STORAGE_KEY);
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            if (parsed && parsed.apiKey && parsed.projectId) return parsed;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      function stopCloudListeners() {
+        if (typeof cloudState.unsubMatches === 'function') {
+          try { cloudState.unsubMatches(); } catch (e) {}
+        }
+        if (typeof cloudState.unsubSettings === 'function') {
+          try { cloudState.unsubSettings(); } catch (e) {}
+        }
+        cloudState.unsubMatches = null;
+        cloudState.unsubSettings = null;
+      }
+
+      function translateFirebaseError(err) {
+        var code = (err && err.code) || '';
+        var msg = (err && err.message) || '';
+        if (code.indexOf('operation-not-allowed') !== -1 || code.indexOf('admin-restricted-operation') !== -1) {
+          return 'חסר שלב קטן ב-Firebase: היכנסו ל-Authentication ← Sign-in method והפעילו את Anonymous (אנונימי), ואז לחצו שוב.';
+        }
+        if (code.indexOf('permission-denied') !== -1 || msg.indexOf('Missing or insufficient permissions') !== -1) {
+          return 'חסר שלב קטן ב-Firebase: היכנסו ל-Firestore Database ← Rules וודאו שבחרתם Start in test mode (allow read, write: if true;).';
+        }
+        if (code.indexOf('invalid-api-key') !== -1 || code.indexOf('api-key-not-valid') !== -1) {
+          return 'מפתח ה-apiKey שהודבק אינו תקין. העתיקו שוב את כל הקוד מ-Project settings ב-Firebase.';
+        }
+        return 'לא הצלחנו להתחבר כרגע ל-Firebase (' + (code || msg || 'שגיאת רשת') + '). בדקו שהפעלתם Firestore ו-Anonymous.';
+      }
+
+      async function connectToFirebaseInstance(config, mode, customToken) {
+        stopCloudListeners();
+
+        var appMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+        var authMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
+        var fsMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+
+        var instanceName = mode === 'custom'
+          ? ('haramaton_ext_' + config.projectId + '_' + Date.now())
+          : 'haramaton_preview_default';
+
+        var fbApp = appMod.initializeApp(config, instanceName);
+        var auth = authMod.getAuth(fbApp);
+        var db = fsMod.getFirestore(fbApp);
+
+        // Mandatory Rule 3: Authenticate FIRST and await before any Firestore query
+        if (customToken) {
+          await authMod.signInWithCustomToken(auth, customToken);
+        } else {
+          await authMod.signInAnonymously(auth);
+        }
+
+        if (!auth.currentUser) {
+          throw new Error('Authentication failed');
+        }
+
+        var appId = mode === 'preview' && typeof __app_id !== 'undefined'
+          ? __app_id
+          : 'haramaton-live';
+
+        cloudState.mode = mode;
+        cloudState.ready = true;
+        cloudState.projectId = config.projectId || '';
+        cloudState.config = config;
+        cloudState.db = db;
+        cloudState.auth = auth;
+        cloudState.fsMod = fsMod;
+        cloudState.appId = appId;
+
+        updateConnectionBadge(mode);
+
+        // Mandatory Rule 1: Strict /artifacts/{appId}/public/data/{collectionName} path
+        var settingsDocRef = fsMod.doc(db, 'artifacts', appId, 'public', 'data', 'haramaton_settings', 'config');
+        var matchesColRef = fsMod.collection(db, 'artifacts', appId, 'public', 'data', 'haramaton_matches');
+
+        // Listen to league title changes
+        cloudState.unsubSettings = fsMod.onSnapshot(
+          settingsDocRef,
+          async function (snap) {
+            if (snap.exists()) {
+              var data = snap.data();
+              if (data && data.title && data.title !== leagueTitle) {
+                applyLeagueTitle(data.title);
+                await LocalDB.saveSettings({ title: data.title, seeded: true });
+              }
+            }
+          },
+          function (err) {
+            console.warn('Settings snapshot error:', err);
+          }
+        );
+
+        // Mandatory Rule 2: Simple collection() query without orderBy/where/limit
+        cloudState.unsubMatches = fsMod.onSnapshot(
+          matchesColRef,
+          async function (snapshot) {
+            var remoteMatches = [];
+            snapshot.forEach(function (docSnap) {
+              var d = docSnap.data();
+              if (d && d.id) {
+                remoteMatches.push(d);
+              }
+            });
+
+            if (remoteMatches.length > 0) {
+              for (var i = 0; i < remoteMatches.length; i++) {
+                await LocalDB.saveMatch(remoteMatches[i]);
+              }
+              await LocalDB.saveSettings({ seeded: true });
+              allMatches = remoteMatches;
+              updateStatsAndFilters();
+              renderMatchesFeed();
+            } else if (allMatches.length > 0) {
+              // Push initial local matches up to empty cloud
+              await syncAllLocalMatchesToCloud();
+            }
+          },
+          function (err) {
+            console.warn('Matches snapshot error:', err);
+          }
+        );
+      }
+
+      async function saveMatchToCloud(matchRecord) {
+        if (!cloudState.ready || !cloudState.db || !cloudState.auth || !cloudState.auth.currentUser) return;
+        try {
+          var fsMod = cloudState.fsMod;
+          var docRef = fsMod.doc(
+            cloudState.db,
+            'artifacts',
+            cloudState.appId,
+            'public',
+            'data',
+            'haramaton_matches',
+            matchRecord.id
+          );
+          await fsMod.setDoc(docRef, matchRecord);
+        } catch (err) {
+          console.error('Cloud match write error:', err);
+          showToast('נשמר במכשיר • בדקו הרשאות כתיבה בענן', 'error');
+        }
+      }
+
+      async function deleteMatchFromCloud(matchId) {
+        if (!cloudState.ready || !cloudState.db || !cloudState.auth || !cloudState.auth.currentUser) return;
+        try {
+          var fsMod = cloudState.fsMod;
+          var docRef = fsMod.doc(
+            cloudState.db,
+            'artifacts',
+            cloudState.appId,
+            'public',
+            'data',
+            'haramaton_matches',
+            matchId
+          );
+          await fsMod.deleteDoc(docRef);
+        } catch (err) {
+          console.error('Cloud match delete error:', err);
+        }
+      }
+
+      async function saveSettingsToCloud(titleStr) {
+        if (!cloudState.ready || !cloudState.db || !cloudState.auth || !cloudState.auth.currentUser) return;
+        try {
+          var fsMod = cloudState.fsMod;
+          var docRef = fsMod.doc(
+            cloudState.db,
+            'artifacts',
+            cloudState.appId,
+            'public',
+            'data',
+            'haramaton_settings',
+            'config'
+          );
+          await fsMod.setDoc(docRef, { title: titleStr, updatedAt: Date.now() }, { merge: true });
+        } catch (err) {
+          console.error('Cloud settings write error:', err);
+        }
+      }
+
+      async function syncAllLocalMatchesToCloud() {
+        if (!cloudState.ready || !cloudState.db || !cloudState.auth || !cloudState.auth.currentUser) return;
+        await saveSettingsToCloud(leagueTitle);
+        for (var i = 0; i < allMatches.length; i++) {
+          await saveMatchToCloud(allMatches[i]);
+        }
+      }
+
+      async function initCloudEngine() {
+        var externalCfg = getSavedExternalFirebaseConfig();
+        if (externalCfg) {
+          try {
+            await connectToFirebaseInstance(externalCfg, 'custom', null);
+            return;
+          } catch (err) {
+            console.warn('External Firebase auto-connect failed:', err);
+          }
+        }
+
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          try {
+            var envCfg = JSON.parse(__firebase_config);
+            var token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            await connectToFirebaseInstance(envCfg, 'preview', token);
+            return;
+          } catch (err) {
+            console.warn('Preview Firebase connect notice:', err);
+          }
+        }
+
+        cloudState.mode = 'local';
+        cloudState.ready = false;
+        updateConnectionBadge('local');
+      }
+
+      // -------------------- 9. SYNCHRONOUS EVENT BINDINGS & BOOTSTRAP --------------------
+      function bindAllEventListeners() {
+        // 1. Editable League Title
+        var titleEditForm = document.getElementById('titleEditForm');
+        var titleDisplayContainer = document.getElementById('titleDisplayContainer');
+        var leagueTitleInput = document.getElementById('leagueTitleInput');
+
+        bindEvent('editTitleBtn', 'click', function () {
+          if (leagueTitleInput) leagueTitleInput.value = leagueTitle;
+          if (titleDisplayContainer) titleDisplayContainer.classList.add('hidden');
+          if (titleEditForm) titleEditForm.classList.remove('hidden');
+          if (leagueTitleInput) leagueTitleInput.focus();
+        });
+
+        bindEvent('cancelEditTitleBtn', 'click', function () {
+          if (titleEditForm) titleEditForm.classList.add('hidden');
+          if (titleDisplayContainer) titleDisplayContainer.classList.remove('hidden');
+        });
+
+        bindEvent('titleEditForm', 'submit', async function (e) {
+          e.preventDefault();
+          var newTitle = (leagueTitleInput && leagueTitleInput.value.trim()) || 'הרמתון';
+          applyLeagueTitle(newTitle);
+          if (titleEditForm) titleEditForm.classList.add('hidden');
+          if (titleDisplayContainer) titleDisplayContainer.classList.remove('hidden');
+
+          await LocalDB.saveSettings({ title: newTitle });
+          if (cloudState.ready) {
+            await saveSettingsToCloud(newTitle);
+          }
+          showToast('שם הליגה עודכן ונשמר בהצלחה!');
+        });
+
+        // 2. Upload Modal Open / Close Triggers
+        bindEvent('openUploadModalBtn', 'click', openNewUploadModal);
+        bindEvent('emptyUploadBtn', 'click', openNewUploadModal);
+        bindEvent('closeUploadModalBtn', 'click', closeUploadModal);
+        bindEvent('cancelUploadModalBtn', 'click', closeUploadModal);
+        bindEvent('matchDateInput', 'change', updateFormattedDatePreview);
+
+        // 3. Dual Image Drop Zones (MOTM max 800px, Newspaper max 1280px at crisp JPEG quality)
+        setupImageDropZone('motmDropZone', 'motmFileInput', 'changeMotmBtn', 800, function (res) {
+          compressedMotmDataUrl = res.dataUrl;
+          document.getElementById('motmPreviewImg').src = res.dataUrl;
+          document.getElementById('motmSizeBadge').textContent = 'מוכן (' + res.kbSize + ' KB)';
+          document.getElementById('motmPrompt').classList.add('hidden');
+          document.getElementById('motmPreviewWrapper').classList.remove('hidden');
+        });
+
+        setupImageDropZone('newsDropZone', 'newsFileInput', 'changeNewsBtn', 1280, function (res) {
+          compressedNewsDataUrl = res.dataUrl;
+          document.getElementById('newsPreviewImg').src = res.dataUrl;
+          document.getElementById('newsSizeBadge').textContent = 'חד ומוכן (' + res.kbSize + ' KB)';
+          document.getElementById('newsPrompt').classList.add('hidden');
+          document.getElementById('newsPreviewWrapper').classList.remove('hidden');
+        });
+
+        // 4. Match Form Submission (Instant local save + automatic cloud sync)
+        bindEvent('matchForm', 'submit', async function (e) {
+          e.preventDefault();
+          hideFormError();
+
+          var matchDate = document.getElementById('matchDateInput').value;
+          var title = document.getElementById('matchTitleInput').value.trim();
+          var motmName = document.getElementById('motmNameInput').value.trim();
+          var editId = document.getElementById('editingMatchId').value;
+
+          if (!matchDate) {
+            showFormError('אנא בחרו את תאריך המשחק.');
+            return;
+          }
+          if (!compressedMotmDataUrl) {
+            showFormError('אנא העלו את תמונת שחקן המשחק.');
+            return;
+          }
+          if (!compressedNewsDataUrl) {
+            showFormError('אנא העלו את תמונת עיתון סיכום המשחק.');
+            return;
+          }
+
+          var submitBtn = document.getElementById('submitMatchBtn');
+          var spinner = document.getElementById('submitSpinner');
+          if (submitBtn) submitBtn.disabled = true;
+          if (spinner) spinner.classList.remove('hidden');
+
+          try {
+            var existingMatch = editId
+              ? allMatches.find(function (m) { return m.id === editId; })
+              : null;
+
+            var matchRecord = {
+              id: editId || generateUniqueId(),
+              matchDate: matchDate,
+              title: title,
+              motmName: motmName,
+              motmImage: compressedMotmDataUrl,
+              newspaperImage: compressedNewsDataUrl,
+              createdAt: existingMatch ? (existingMatch.createdAt || Date.now()) : Date.now(),
+              updatedAt: Date.now()
+            };
+
+            await LocalDB.saveMatch(matchRecord);
+            await LocalDB.saveSettings({ seeded: true });
+
+            if (editId) {
+              var idx = allMatches.findIndex(function (m) { return m.id === editId; });
+              if (idx >= 0) allMatches[idx] = matchRecord;
+              else allMatches.unshift(matchRecord);
+            } else {
+              allMatches.unshift(matchRecord);
+            }
+
+            updateStatsAndFilters();
+            renderMatchesFeed();
+            closeUploadModal();
+            showToast(editId ? 'המחזור עודכן ונשמר!' : 'המחזור פורסם ונשמר אוטומטית!');
+
+            if (cloudState.ready) {
+              await saveMatchToCloud(matchRecord);
+            }
+          } catch (err) {
+            console.error('Save match error:', err);
+            showFormError('אירעה שגיאה בשמירת המחזור. נסו שוב.');
+          } finally {
+            if (submitBtn) submitBtn.disabled = false;
+            if (spinner) spinner.classList.add('hidden');
+          }
+        });
+
+        // 5. Load Sample Entries Button (from Empty State)
+        bindEvent('loadDemoBtn', 'click', async function () {
+          var samples = buildSampleEntries();
+          for (var i = 0; i < samples.length; i++) {
+            await LocalDB.saveMatch(samples[i]);
+          }
+          await LocalDB.saveSettings({ seeded: true });
+          allMatches = samples.slice();
+          updateStatsAndFilters();
+          renderMatchesFeed();
+          if (cloudState.ready) {
+            await syncAllLocalMatchesToCloud();
+          }
+          showToast('נטענו 2 מחזורים לדוגמה! לחצו על העיתון כדי לקרוא מקרוב.');
+        });
+
+        // 6. Weekly Feed Delegation (Lightbox, Edit, Delete)
+        bindEvent('weeklyFeed', 'click', function (e) {
+          var target = e.target.closest('[data-action]');
+          if (!target) return;
+          var action = target.dataset.action;
+          var id = target.dataset.id;
+          var match = allMatches.find(function (m) { return m.id === id; });
+          if (!match) return;
+
+          if (action === 'lightbox') {
+            openLightbox(match, target.dataset.mode || 'newspaper');
+          } else if (action === 'edit') {
+            openEditModal(match);
+          } else if (action === 'delete') {
+            pendingDeleteId = match.id;
+            var delModal = document.getElementById('deleteConfirmModal');
+            if (delModal) delModal.classList.remove('hidden');
+          }
+        });
+
+        // 7. Delete Confirmation Modal
+        bindEvent('cancelDeleteBtn', 'click', function () {
+          pendingDeleteId = null;
+          var delModal = document.getElementById('deleteConfirmModal');
+          if (delModal) delModal.classList.add('hidden');
+        });
+
+        bindEvent('confirmDeleteBtn', 'click', async function () {
+          if (!pendingDeleteId) return;
+          var targetId = pendingDeleteId;
+          pendingDeleteId = null;
+          var delModal = document.getElementById('deleteConfirmModal');
+          if (delModal) delModal.classList.add('hidden');
+
+          await LocalDB.deleteMatch(targetId);
+          allMatches = allMatches.filter(function (m) { return m.id !== targetId; });
+          updateStatsAndFilters();
+          renderMatchesFeed();
+          showToast('המחזור נמחק מהארכיון');
+
+          if (cloudState.ready) {
+            await deleteMatchFromCloud(targetId);
+          }
+        });
+
+        // 8. Search & Sort Toolbar
+        var searchInput = document.getElementById('searchInput');
+        var clearSearchBtn = document.getElementById('clearSearchBtn');
+        bindEvent('searchInput', 'input', function (e) {
+          searchQuery = e.target.value;
+          if (clearSearchBtn) clearSearchBtn.classList.toggle('hidden', !searchQuery);
+          renderMatchesFeed();
+        });
+
+        bindEvent('clearSearchBtn', 'click', function () {
+          searchQuery = '';
+          if (searchInput) searchInput.value = '';
+          if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+          renderMatchesFeed();
+        });
+
+        bindEvent('sortToggleBtn', 'click', function () {
+          sortNewestFirst = !sortNewestFirst;
+          var sortLabel = document.getElementById('sortLabel');
+          if (sortLabel) {
+            sortLabel.textContent = sortNewestFirst
+              ? 'החדש ביותר תחילה'
+              : 'הישן ביותר תחילה';
+          }
+          renderMatchesFeed();
+        });
+
+        bindEvent('resetFiltersBtn', 'click', function () {
+          searchQuery = '';
+          if (searchInput) searchInput.value = '';
+          if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+          selectedMonthFilter = 'ALL';
+          updateStatsAndFilters();
+          renderMatchesFeed();
+        });
+
+        // 9. Lightbox Controls (Switch, Zoom, Pan, Download, Close)
+        bindEvent('lbSwitchMotmBtn', 'click', function () {
+          lightboxMode = 'motm';
+          resetLightboxTransform();
+          renderLightboxContent();
+        });
+
+        bindEvent('lbSwitchNewsBtn', 'click', function () {
+          lightboxMode = 'newspaper';
+          resetLightboxTransform();
+          renderLightboxContent();
+        });
+
+        document.querySelectorAll('.lb-zoom-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            lbZoom = parseFloat(btn.dataset.zoom);
+            if (lbZoom === 1) {
+              lbTranslateX = 0;
+              lbTranslateY = 0;
+            }
+            applyLightboxTransform();
+            updateZoomButtonUI();
+          });
+        });
+
+        var lightboxStage = bindEvent('lightboxStage', 'dblclick', function () {
+          if (lbZoom > 1) {
+            resetLightboxTransform();
+          } else {
+            lbZoom = 1.8;
+            applyLightboxTransform();
+            updateZoomButtonUI();
+          }
+        });
+
+        if (lightboxStage) {
+          lightboxStage.addEventListener('mousedown', function (e) {
+            if (lbZoom <= 1) return;
+            isDraggingLb = true;
+            dragStartX = e.clientX - lbTranslateX;
+            dragStartY = e.clientY - lbTranslateY;
+            lightboxStage.classList.add('cursor-grabbing-custom');
+          });
+
+          window.addEventListener('mousemove', function (e) {
+            if (!isDraggingLb) return;
+            lbTranslateX = e.clientX - dragStartX;
+            lbTranslateY = e.clientY - dragStartY;
+            applyLightboxTransform();
+          });
+
+          window.addEventListener('mouseup', function () {
+            if (isDraggingLb) {
+              isDraggingLb = false;
+              lightboxStage.classList.remove('cursor-grabbing-custom');
+            }
+          });
+
+          lightboxStage.addEventListener('touchstart', function (e) {
+            if (lbZoom <= 1 || e.touches.length !== 1) return;
+            isDraggingLb = true;
+            dragStartX = e.touches[0].clientX - lbTranslateX;
+            dragStartY = e.touches[0].clientY - lbTranslateY;
+          }, { passive: true });
+
+          lightboxStage.addEventListener('touchmove', function (e) {
+            if (!isDraggingLb || e.touches.length !== 1) return;
+            lbTranslateX = e.touches[0].clientX - dragStartX;
+            lbTranslateY = e.touches[0].clientY - dragStartY;
+            applyLightboxTransform();
+          }, { passive: true });
+
+          lightboxStage.addEventListener('touchend', function () {
+            isDraggingLb = false;
+          });
+        }
+
+        bindEvent('lbDownloadBtn', 'click', function () {
+          if (!lightboxMatch) return;
+          var dataUrl = lightboxMode === 'motm' ? lightboxMatch.motmImage : lightboxMatch.newspaperImage;
+          if (!dataUrl) return;
+          var link = document.createElement('a');
+          var prefix = lightboxMode === 'motm' ? 'haramaton-mvp' : 'haramaton-newspaper';
+          link.href = dataUrl;
+          link.download = prefix + '-' + (lightboxMatch.matchDate || 'match') + '.jpg';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast('התמונה ירדה למכשיר בהצלחה!');
+        });
+
+        bindEvent('closeLightboxBtn', 'click', closeLightbox);
+
+        // 10. Firebase Cloud Settings Modal
+        var cloudModal = document.getElementById('cloudSettingsModal');
+        var previewNotice = document.getElementById('previewCloudNotice');
+        var setupView = document.getElementById('cloudSetupView');
+        var connectedView = document.getElementById('cloudConnectedView');
+        var projectIdLabel = document.getElementById('connectedProjectIdLabel');
+        var cloudStatus = document.getElementById('cloudConfigStatus');
+
+        function refreshCloudModalUI() {
+          if (cloudStatus) cloudStatus.classList.add('hidden');
+          if (cloudState.mode === 'custom' && cloudState.ready) {
+            if (previewNotice) previewNotice.classList.add('hidden');
+            if (setupView) setupView.classList.add('hidden');
+            if (connectedView) connectedView.classList.remove('hidden');
+            if (projectIdLabel) projectIdLabel.textContent = cloudState.projectId;
+          } else {
+            if (connectedView) connectedView.classList.add('hidden');
+            if (setupView) setupView.classList.remove('hidden');
+            if (previewNotice) {
+              if (cloudState.mode === 'preview') previewNotice.classList.remove('hidden');
+              else previewNotice.classList.add('hidden');
+            }
+          }
+        }
+
+        function openCloudSettingsModal() {
+          refreshCloudModalUI();
+          if (cloudModal) cloudModal.classList.remove('hidden');
+        }
+
+        bindEvent('openCloudModalBtn', 'click', openCloudSettingsModal);
+        bindEvent('connectionBadge', 'click', openCloudSettingsModal);
+
+        bindEvent('closeCloudModalBtn', 'click', function () {
+          if (cloudModal) cloudModal.classList.add('hidden');
+        });
+        bindEvent('closeCloudConnectedBtn', 'click', function () {
+          if (cloudModal) cloudModal.classList.add('hidden');
+        });
+
+        bindEvent('connectFirebaseBtn', 'click', async function () {
+          var pasteInput = document.getElementById('firebaseConfigPasteInput');
+          var parsedConfig = parseFlexibleFirebaseConfig(pasteInput ? pasteInput.value : '');
+
+          if (!parsedConfig) {
+            if (cloudStatus) {
+              cloudStatus.textContent = 'לא זוהה קוד Firebase תקין. העתיקו את כל קטע הקוד מתוך Project settings ב-Firebase והדביקו למעלה.';
+              cloudStatus.classList.remove('hidden');
+            }
+            return;
+          }
+
+          var btn = document.getElementById('connectFirebaseBtn');
+          var spinner = document.getElementById('connectFirebaseSpinner');
+          var btnText = document.getElementById('connectFirebaseBtnText');
+          if (btn) btn.disabled = true;
+          if (spinner) spinner.classList.remove('hidden');
+          if (btnText) btnText.textContent = 'מתחבר ובודק שמירה בענן...';
+          if (cloudStatus) cloudStatus.classList.add('hidden');
+
+          try {
+            await connectToFirebaseInstance(parsedConfig, 'custom', null);
+            await syncAllLocalMatchesToCloud();
+
+            try {
+              localStorage.setItem(CUSTOM_FIREBASE_STORAGE_KEY, JSON.stringify(parsedConfig));
+            } catch (e) {}
+
+            refreshCloudModalUI();
+            showToast('החיבור לענן הצליח! כל התמונות נשמרו אוטומטית בענן.');
+          } catch (err) {
+            console.error('Connect custom Firebase failed:', err);
+            if (cloudStatus) {
+              cloudStatus.textContent = translateFirebaseError(err);
+              cloudStatus.classList.remove('hidden');
+            }
+          } finally {
+            if (btn) btn.disabled = false;
+            if (spinner) spinner.classList.add('hidden');
+            if (btnText) btnText.textContent = 'הפעל ושמור חיבור ענן';
+          }
+        });
+
+        bindEvent('disconnectFirebaseBtn', 'click', async function () {
+          try {
+            localStorage.removeItem(CUSTOM_FIREBASE_STORAGE_KEY);
+          } catch (e) {}
+          window.__EMBEDDED_FIREBASE_CONFIG__ = null;
+          stopCloudListeners();
+          cloudState.mode = 'local';
+          cloudState.ready = false;
+          cloudState.config = null;
+          cloudState.projectId = '';
+          await initCloudEngine();
+          refreshCloudModalUI();
+          showToast('חיבור הענן החיצוני הוסר.');
+        });
+
+        // 11. Save & Download Standalone Site Modal
+        var backupModal = document.getElementById('backupModal');
+        var importJsonInput = document.getElementById('importJsonInput');
+
+        bindEvent('openBackupModalBtn', 'click', function () {
+          var badge = document.getElementById('backupMatchCountBadge');
+          if (badge) badge.textContent = allMatches.length + ' מחזורים כלולים בקובץ';
+          if (backupModal) backupModal.classList.remove('hidden');
+        });
+
+        bindEvent('closeBackupModalBtn', 'click', function () {
+          if (backupModal) backupModal.classList.add('hidden');
+        });
+        bindEvent('closeBackupFooterBtn', 'click', function () {
+          if (backupModal) backupModal.classList.add('hidden');
+        });
+
+        bindEvent('downloadStandaloneHtmlBtn', 'click', function () {
+          try {
+            var docClone = document.documentElement.cloneNode(true);
+            ['backupModal', 'uploadModal', 'lightboxModal', 'deleteConfirmModal', 'cloudSettingsModal'].forEach(function (modalId) {
+              var m = docClone.querySelector('#' + modalId);
+              if (m) m.classList.add('hidden');
+            });
+
+            var feedClone = docClone.querySelector('#weeklyFeed');
+            if (feedClone) feedClone.innerHTML = '';
+            var monthBarClone = docClone.querySelector('#monthFilterBar');
+            if (monthBarClone) {
+              monthBarClone.innerHTML = '';
+              monthBarClone.classList.add('hidden');
+            }
+            var loadingClone = docClone.querySelector('#loadingState');
+            if (loadingClone) loadingClone.classList.remove('hidden');
+            var emptyClone = docClone.querySelector('#emptyState');
+            if (emptyClone) emptyClone.classList.add('hidden');
+            var toastClone = docClone.querySelector('#toastContainer');
+            if (toastClone) toastClone.innerHTML = '';
+
+            var payloadJson = JSON.stringify({
+              title: leagueTitle,
+              matches: allMatches
+            }).replace(/<\/script>/gi, '<\\/script>');
+
+            var preloadScript = docClone.querySelector('#preloadedArchiveData');
+            if (preloadScript) {
+              preloadScript.textContent = 'window.__PRELOADED_ARCHIVE__ = ' + payloadJson + ';';
+            }
+
+            var embeddedCfgScript = docClone.querySelector('#embeddedFirebaseConfigData');
+            if (embeddedCfgScript) {
+              var activeExternalConfig = (cloudState.mode === 'custom' && cloudState.config)
+                ? cloudState.config
+                : getSavedExternalFirebaseConfig();
+              var cfgJson = activeExternalConfig
+                ? JSON.stringify(activeExternalConfig).replace(/<\/script>/gi, '<\\/script>')
+                : 'null';
+              embeddedCfgScript.textContent = 'window.__EMBEDDED_FIREBASE_CONFIG__ = ' + cfgJson + ';';
+            }
+
+            var fullHtml = '<!DOCTYPE html>\n' + docClone.outerHTML;
+            var blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'index.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+
+            if (backupModal) backupModal.classList.add('hidden');
+            showToast('קובץ index.html המוכן להעלאה לרשת ירד למחשב שלך!');
+          } catch (err) {
+            console.error('Standalone export failed:', err);
+            showToast('אירעה שגיאה ביצירת הקובץ', 'error');
+          }
+        });
+
+        bindEvent('exportJsonBtn', 'click', function () {
+          var dataStr = JSON.stringify({
+            title: leagueTitle,
+            exportedAt: new Date().toISOString(),
+            matches: allMatches
+          }, null, 2);
+          var blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = 'haramaton-backup-' + getDateOffsetString(0) + '.json';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+          showToast('קובץ הגיבוי (JSON) נשמר בהצלחה!');
+        });
+
+        bindEvent('importJsonBtn', 'click', function () {
+          if (importJsonInput) importJsonInput.click();
+        });
+
+        bindEvent('importJsonInput', 'change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = async function (evt) {
+            try {
+              var parsed = JSON.parse(evt.target.result);
+              var importedMatches = Array.isArray(parsed) ? parsed : (parsed.matches || []);
+              if (!Array.isArray(importedMatches) || importedMatches.length === 0) {
+                showToast('לא נמצאו מחזורים תקינים בקובץ הגיבוי', 'error');
+                return;
+              }
+              if (parsed.title) {
+                applyLeagueTitle(parsed.title);
+                await LocalDB.saveSettings({ title: parsed.title, seeded: true });
+              }
+              for (var i = 0; i < importedMatches.length; i++) {
+                await LocalDB.saveMatch(importedMatches[i]);
+              }
+              await LocalDB.saveSettings({ seeded: true });
+              allMatches = await LocalDB.getAllMatches();
+              updateStatsAndFilters();
+              renderMatchesFeed();
+              if (cloudState.ready) {
+                await syncAllLocalMatchesToCloud();
+              }
+              if (backupModal) backupModal.classList.add('hidden');
+              showToast('שוחזרו ' + importedMatches.length + ' מחזורים מהגיבוי בהצלחה!');
+            } catch (err) {
+              showToast('קובץ הגיבוי אינו תקין', 'error');
+            } finally {
+              e.target.value = '';
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // 12. Keyboard Escape Support
+        window.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') {
+            var lb = document.getElementById('lightboxModal');
+            var up = document.getElementById('uploadModal');
+            var dl = document.getElementById('deleteConfirmModal');
+            if (lb && !lb.classList.contains('hidden')) closeLightbox();
+            if (up && !up.classList.contains('hidden')) closeUploadModal();
+            if (cloudModal && !cloudModal.classList.contains('hidden')) cloudModal.classList.add('hidden');
+            if (backupModal && !backupModal.classList.contains('hidden')) backupModal.classList.add('hidden');
+            if (dl && !dl.classList.contains('hidden')) {
+              pendingDeleteId = null;
+              dl.classList.add('hidden');
+            }
+          }
+        });
+      }
+
+      async function bootstrapApp() {
+        try {
+          // Attach all UI & form listeners synchronously first
+          bindAllEventListeners();
+
+          // Load saved settings & matches from local IndexedDB immediately
+          var settings = await LocalDB.getSettings();
+          applyLeagueTitle(settings.title || 'הרמתון');
+
+          var storedMatches = await LocalDB.getAllMatches();
+
+          // Seed from preloaded standalone export OR 2 sample entries on first load
+          var preloaded = window.__PRELOADED_ARCHIVE__;
+          if (storedMatches.length === 0 && preloaded && Array.isArray(preloaded.matches) && preloaded.matches.length > 0) {
+            if (preloaded.title) {
+              applyLeagueTitle(preloaded.title);
+            }
+            storedMatches = preloaded.matches;
+            for (var i = 0; i < storedMatches.length; i++) {
+              await LocalDB.saveMatch(storedMatches[i]);
+            }
+            await LocalDB.saveSettings({ title: leagueTitle, seeded: true });
+          } else if (storedMatches.length === 0 && !settings.seeded) {
+            storedMatches = buildSampleEntries();
+            for (var j = 0; j < storedMatches.length; j++) {
+              await LocalDB.saveMatch(storedMatches[j]);
+            }
+            await LocalDB.saveSettings({ title: leagueTitle, seeded: true });
+          }
+
+          allMatches = storedMatches;
+
+          var loadingState = document.getElementById('loadingState');
+          if (loadingState) loadingState.classList.add('hidden');
+
+          updateStatsAndFilters();
+          renderMatchesFeed();
+
+          // Initialize Firebase cloud sync (environment preview or embedded external config)
+          initCloudEngine();
+        } catch (err) {
+          console.error('Bootstrap error:', err);
+          var loadingEl = document.getElementById('loadingState');
+          if (loadingEl) loadingEl.classList.add('hidden');
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrapApp);
+      } else {
+        bootstrapApp();
+      }
+    })();
+  </script>
+</body>
+</html>
