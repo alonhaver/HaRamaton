@@ -1,3 +1,31 @@
+עדכנתי את הקוד של האתר (`index.html`) עם התמיכה בהעלאת מספר תמונות למהדורת המחזור ותצוגה מאוחדת ונוחה להחלפה בטלפון:
+
+### מה התווסף ושונה:
+
+1. **העלאת מספר בלתי מוגבל של תמונות למהדורת המחזור**:
+* בחלון העלאת/עריכת מחזור ניתן לבחור כמה תמונות יחד מהגלריה או לגרור אותן בבת אחת.
+* לכל תמונה מוצג מספר עמוד (`עמוד 1`, `עמוד 2` וכו׳) עם אפשרות לשנות סדר, למחוק תמונה בודדת או ללחוץ על **"+ הוסף עוד תמונות"**.
+* דחיסה חכמה מותאמת אוטומטית כדי שגם מחזורים עם מספר עמודים יישמרו בענן (Firebase) ללא חריגה ממגבלת הגודל.
+
+
+
+
+2. **תצוגה מאוחדת בטלפון (כל תמונות המחזור במקום אחד)**:
+* במסכי טלפון, תמונת **שחקן המשחק** וכל תמונות **מהדורת המחזור** מרוכזות יחד בתוך אותו אזור.
+* ניתן לעבור ביניהן בקלות באמצעות **לשוניות מהירות** למעלה (`שחקן המשחק`, `עמוד 1`, `עמוד 2`...), **החלקת אצבע (Swipe)** ימינה ושמאלה על התמונה, **חיצי ניווט** בצדדים או **נקודות החיווי** למטה.
+
+
+3. **תצוגת מחשב ומסך מלא (Lightbox)**:
+* במחשב נשמרת התצוגה הדו-צדדית, ובתיבת מהדורת המחזור נוספו חיצים וכפתורי מעבר בין העמודים.
+* בלחיצה להגדלה במסך מלא ניתן לדפדף עם חיצים, המקלדת או החלקת אצבע בין שחקן המשחק לכל עמודי המהדורה.
+
+
+
+---
+
+### הקוד המעודכן המלא (`index.html`):
+
+```html
 <!DOCTYPE html>
 <html lang="he" dir="rtl" class="dark">
 <head>
@@ -65,6 +93,15 @@
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #2e5249;
+    }
+
+    /* Hide scrollbar for clean mobile tab bars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
 
     /* Lightbox Smooth Panning */
@@ -326,7 +363,7 @@
         </div>
         <h2 class="font-display text-xl sm:text-2xl font-bold text-white">עדיין אין מחזורים בארכיון</h2>
         <p class="text-slate-400 text-sm sm:text-base mt-2 max-w-md mx-auto">
-          העלו עכשיו את תמונת שחקן המשחק ואת עיתון הסיכום של השבוע כדי להתחיל לתעד את ההיסטוריה של הרמתון!
+          העלו עכשיו את תמונת שחקן המשחק ואת תמונות מהדורת המחזור כדי להתחיל לתעד את ההיסטוריה של הרמתון!
         </p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
@@ -367,7 +404,7 @@
 
   <!-- ==================== UPLOAD / EDIT MODAL ==================== -->
   <div id="uploadModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm p-3 sm:p-6 flex items-start sm:items-center justify-center">
-    <div class="relative w-full max-w-3xl bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden my-auto">
+    <div class="relative w-full max-w-4xl bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden my-auto">
 
       <!-- Modal Header -->
       <div class="flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 bg-slate-950/90 border-b border-slate-800">
@@ -381,7 +418,7 @@
           </div>
           <div>
             <h3 id="uploadModalTitle" class="font-display text-lg sm:text-xl font-extrabold text-white">העלאת מחזור חדש</h3>
-            <p class="text-xs text-slate-400">העלו את תמונת המצטיין ואת עיתון סיכום המשחק</p>
+            <p class="text-xs text-slate-400">העלו את תמונת המצטיין ואת כל תמונות מהדורת המחזור</p>
           </div>
         </div>
         <button
@@ -453,10 +490,10 @@
         </div>
 
         <!-- Row 2: Dual Image Drop Zones -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
 
-          <!-- 1. Man of the Match Photo Upload -->
-          <div class="space-y-2">
+          <!-- 1. Man of the Match Photo Upload (Single Image) -->
+          <div class="md:col-span-5 space-y-2">
             <label class="flex items-center gap-1.5 text-xs font-bold text-amber-300">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
@@ -470,7 +507,7 @@
 
             <div
               id="motmDropZone"
-              class="relative group border-2 border-dashed border-amber-500/35 hover:border-amber-400 bg-slate-950/70 rounded-2xl p-4 text-center transition-all cursor-pointer min-h-[220px] flex flex-col items-center justify-center overflow-hidden"
+              class="relative group border-2 border-dashed border-amber-500/35 hover:border-amber-400 bg-slate-950/70 rounded-2xl p-4 text-center transition-all cursor-pointer min-h-[240px] flex flex-col items-center justify-center overflow-hidden"
             >
               <input id="motmFileInput" type="file" accept="image/*" class="hidden" />
 
@@ -504,24 +541,27 @@
             </div>
           </div>
 
-          <!-- 2. Match Summary Newspaper Photo Upload -->
-          <div class="space-y-2">
-            <label class="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                <path d="M18 14h-8"></path>
-                <path d="M15 18h-5"></path>
-                <path d="M10 6h8v4h-8V6Z"></path>
-              </svg>
-              <span>תמונת עיתון סיכום המשחק</span>
-              <span class="text-rose-400">*</span>
-            </label>
+          <!-- 2. Match Summary Newspaper Multi-Photo Upload -->
+          <div class="md:col-span-7 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <label class="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                  <path d="M18 14h-8"></path>
+                  <path d="M15 18h-5"></path>
+                  <path d="M10 6h8v4h-8V6Z"></path>
+                </svg>
+                <span>תמונות מהדורת המחזור (עיתון סיכום)</span>
+                <span class="text-rose-400">*</span>
+              </label>
+              <span class="text-[11px] text-emerald-400/80 font-medium">ניתן לבחור כמה תמונות</span>
+            </div>
 
             <div
               id="newsDropZone"
-              class="relative group border-2 border-dashed border-emerald-500/35 hover:border-emerald-400 bg-slate-950/70 rounded-2xl p-4 text-center transition-all cursor-pointer min-h-[220px] flex flex-col items-center justify-center overflow-hidden"
+              class="relative group border-2 border-dashed border-emerald-500/35 hover:border-emerald-400 bg-slate-950/70 rounded-2xl p-4 text-center transition-all cursor-pointer min-h-[240px] flex flex-col items-center justify-center overflow-hidden"
             >
-              <input id="newsFileInput" type="file" accept="image/*" class="hidden" />
+              <input id="newsFileInput" type="file" accept="image/*" multiple class="hidden" />
 
               <!-- Empty Drop Prompt -->
               <div id="newsPrompt" class="space-y-2 pointer-events-none">
@@ -531,22 +571,32 @@
                     <path d="M10 6h8v4h-8V6Z"></path>
                   </svg>
                 </div>
-                <p class="text-sm font-bold text-slate-200">גררו את עיתון הסיכום או לחצו לבחירה</p>
-                <p class="text-xs text-slate-500">נשמר באיכות חדה לקריאת כל הכתבות</p>
+                <p class="text-sm font-bold text-slate-200">גררו לכאן תמונה אחת או יותר, או לחצו לבחירה</p>
+                <p class="text-xs text-slate-500">בחרו כמה עמודים שתרצו למהדורת המחזור</p>
               </div>
 
-              <!-- Preview Container -->
-              <div id="newsPreviewWrapper" class="hidden w-full h-full flex flex-col items-center">
-                <img id="newsPreviewImg" src="" alt="תצוגה מקדימה עיתון סיכום" class="max-h-48 w-auto rounded-xl object-contain shadow-lg" />
-                <div class="mt-3 flex items-center gap-2.5">
-                  <span id="newsSizeBadge" class="text-[11px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-semibold">מוכן</span>
-                  <button
-                    id="changeNewsBtn"
-                    type="button"
-                    class="text-xs font-bold px-3 py-1 rounded-lg bg-slate-800 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-colors"
-                  >
-                    החלף תמונה
-                  </button>
+              <!-- Multi-Image Preview Container -->
+              <div id="newsPreviewWrapper" class="hidden w-full flex flex-col gap-3">
+                <div id="newsThumbsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 w-full max-h-64 overflow-y-auto p-0.5"></div>
+
+                <div class="pt-2 border-t border-slate-800/90 flex flex-wrap items-center justify-between gap-2">
+                  <span id="newsCountBadge" class="text-[11px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-semibold">תמונה אחת</span>
+                  <div class="flex items-center gap-2">
+                    <button
+                      id="clearAllNewsBtn"
+                      type="button"
+                      class="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 transition-colors"
+                    >
+                      נקה הכל
+                    </button>
+                    <button
+                      id="addMoreNewsBtn"
+                      type="button"
+                      class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition-colors"
+                    >
+                      <span>+ הוסף עוד תמונות</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -583,10 +633,10 @@
   <div id="lightboxModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col">
 
     <!-- Lightbox Top Toolbar -->
-    <div class="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3 bg-slate-900/90 border-b border-slate-800 z-10">
-      <div class="flex items-center gap-3 min-w-0">
-        <span id="lightboxBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-          עיתון סיכום
+    <div class="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-6 py-2.5 sm:py-3 bg-slate-900/90 border-b border-slate-800 z-10">
+      <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <span id="lightboxBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+          מהדורת המחזור
         </span>
         <div class="min-w-0">
           <h4 id="lightboxTitle" class="font-display text-sm sm:text-base font-bold text-white truncate">כותרת</h4>
@@ -594,46 +644,31 @@
         </div>
       </div>
 
-      <!-- Zoom, Switch & Download Controls -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- Switch between MVP and Newspaper inside Lightbox -->
-        <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
-          <button
-            id="lbSwitchMotmBtn"
-            type="button"
-            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
-          >
-            שחקן המשחק
-          </button>
-          <button
-            id="lbSwitchNewsBtn"
-            type="button"
-            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
-          >
-            העיתון
-          </button>
-        </div>
+      <!-- Dynamic Slide Switcher Tabs + Zoom + Download Controls -->
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-full">
+        <!-- Dynamic Tabs for MVP + All Edition Pages -->
+        <div id="lightboxTabsContainer" class="inline-flex items-center gap-1 rounded-xl bg-slate-950 p-1 border border-slate-800 overflow-x-auto no-scrollbar max-w-[65vw] sm:max-w-md"></div>
 
         <!-- Zoom Controls -->
         <div class="inline-flex items-center rounded-xl bg-slate-950 border border-slate-800 p-1">
           <button
             type="button"
             data-zoom="1"
-            class="lb-zoom-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+            class="lb-zoom-btn px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
           >
             1x
           </button>
           <button
             type="button"
             data-zoom="1.5"
-            class="lb-zoom-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+            class="lb-zoom-btn px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
           >
             1.5x
           </button>
           <button
             type="button"
             data-zoom="2.2"
-            class="lb-zoom-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+            class="lb-zoom-btn px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
           >
             2.2x
           </button>
@@ -670,6 +705,18 @@
 
     <!-- Interactive Zoom & Pan Canvas Stage -->
     <div id="lightboxStage" class="lightbox-img-stage relative flex-1 overflow-hidden flex items-center justify-center p-4">
+      <!-- Previous Slide Arrow (Right in RTL) -->
+      <button
+        id="lbPrevSlideBtn"
+        type="button"
+        title="התמונה הקודמת"
+        class="hidden absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-900/90 hover:bg-emerald-500 text-white hover:text-slate-950 border border-slate-700 shadow-2xl flex items-center justify-center transition-all"
+      >
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+
       <img
         id="lightboxImage"
         src=""
@@ -677,8 +724,21 @@
         draggable="false"
         class="max-h-full max-w-full object-contain rounded-xl shadow-2xl transition-transform duration-150 ease-out"
       />
-      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/85 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs text-slate-300 pointer-events-none">
-        לחצו פעמיים להגדלה • גררו להזזה נוחה לקריאת העיתון
+
+      <!-- Next Slide Arrow (Left in RTL) -->
+      <button
+        id="lbNextSlideBtn"
+        type="button"
+        title="התמונה הבאה"
+        class="hidden absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-900/90 hover:bg-emerald-500 text-white hover:text-slate-950 border border-slate-700 shadow-2xl flex items-center justify-center transition-all"
+      >
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/85 border border-slate-700/80 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs text-slate-300 pointer-events-none whitespace-nowrap">
+        לחצו פעמיים להגדלה • החליקו או השתמשו בחיצים למעבר בין תמונות
       </div>
     </div>
   </div>
@@ -744,12 +804,12 @@
         </button>
       </div>
 
-      <!-- Preview Environment Info Banner (shown only inside preview when no external config is set yet) -->
+      <!-- Preview Environment Info Banner -->
       <div id="previewCloudNotice" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs text-amber-200 leading-relaxed">
         כרגע האתר מחובר לענן הזמני של חלון התצוגה. כדי שהשמירה האוטומטית תעבוד גם <strong>אחרי שתעלו את האתר לכתובת משלכם באינטרנט</strong>, חברו פרויקט חינמי של Google Firebase לפי 4 השלבים למטה:
       </div>
 
-      <!-- Setup View (when external Firebase is not connected yet) -->
+      <!-- Setup View -->
       <div id="cloudSetupView" class="space-y-4">
         <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-2.5 text-xs sm:text-sm text-slate-300 leading-relaxed">
           <p class="font-bold text-sky-300">הגדרה חד-פעמית (2 דקות, חינם ללא כרטיס אשראי):</p>
@@ -789,7 +849,7 @@
         </button>
       </div>
 
-      <!-- Connected View (when external Firebase is active) -->
+      <!-- Connected View -->
       <div id="cloudConnectedView" class="hidden space-y-4">
         <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-2.5">
           <div class="flex items-center gap-2 text-emerald-300 font-bold text-sm">
@@ -910,6 +970,7 @@
   <!-- Preloaded Archive & Cloud Payload (populated automatically when exporting standalone HTML) -->
   <script id="preloadedArchiveData">window.__PRELOADED_ARCHIVE__ = null;</script>
   <script id="embeddedFirebaseConfigData">window.__EMBEDDED_FIREBASE_CONFIG__ = {"apiKey":"AIzaSyC7QF37f4JVlB2EW4L-dWbIe-1h0HktuIY","authDomain":"haramaton.firebaseapp.com","projectId":"haramaton","storageBucket":"haramaton.firebasestorage.app","messagingSenderId":"912941522982","appId":"1:912941522982:web:afd1d9bae2c7c35cc186e7","measurementId":"G-PXRFJKT1NH"};</script>
+
   <!-- ==================== APPLICATION LOGIC (SYNCHRONOUS + FIREBASE REAL-TIME CLOUD SYNC) ==================== -->
   <script>
     (function () {
@@ -926,9 +987,19 @@
       var searchQuery = '';
       var selectedMonthFilter = 'ALL';
 
+      // Per-card active slide states (mobile unified index & desktop newspaper page index)
+      var mobileSlideIndexMap = {};
+      var desktopNewsIndexMap = {};
+
+      // Touch swipe tracking on feed cards
+      var feedTouchStartX = 0;
+      var feedTouchStartY = 0;
+      var feedSwipeContext = null; // { matchId, scope: 'mobile' | 'desktop-news' }
+      var suppressNextFeedClick = false;
+
       // Upload / Edit Form State
       var compressedMotmDataUrl = '';
-      var compressedNewsDataUrl = '';
+      var compressedNewsDataUrls = []; // Array of base64 data URLs for the matchweek edition
       var pendingDeleteId = null;
 
       // Cloud Sync State ('local' | 'preview' | 'custom')
@@ -947,13 +1018,15 @@
 
       // Lightbox State
       var lightboxMatch = null;
-      var lightboxMode = 'newspaper'; // 'motm' | 'newspaper'
+      var lightboxSlideIndex = 0;
       var lbZoom = 1;
       var lbTranslateX = 0;
       var lbTranslateY = 0;
       var isDraggingLb = false;
       var dragStartX = 0;
       var dragStartY = 0;
+      var lbTouchStartX = 0;
+      var lbTouchStartY = 0;
 
       // -------------------- 2. INDEXEDDB + LOCALSTORAGE FALLBACK ENGINE --------------------
       var DB_NAME = 'HaramatonArchiveDB';
@@ -1101,7 +1174,7 @@
         }
       };
 
-      // -------------------- 3. GENERAL UI & FORMATTING HELPERS --------------------
+      // -------------------- 3. GENERAL UI & DATA HELPERS --------------------
       function bindEvent(elementId, eventName, handler) {
         var el = document.getElementById(elementId);
         if (el) {
@@ -1131,6 +1204,56 @@
         var month = String(d.getMonth() + 1).padStart(2, '0');
         var day = String(d.getDate()).padStart(2, '0');
         return year + '-' + month + '-' + day;
+      }
+
+      // Backward-compatible getter for matchweek edition images
+      function getNewspaperImages(match) {
+        if (!match) return [];
+        if (Array.isArray(match.newspaperImages) && match.newspaperImages.length > 0) {
+          return match.newspaperImages.filter(function (src) {
+            return typeof src === 'string' && src.length > 0;
+          });
+        }
+        if (match.newspaperImage && typeof match.newspaperImage === 'string') {
+          return [match.newspaperImage];
+        }
+        return [];
+      }
+
+      // Unified slides list for a match: MVP + all Edition images
+      function getMatchMediaSlides(match) {
+        var slides = [];
+        if (!match) return slides;
+
+        if (match.motmImage) {
+          slides.push({
+            type: 'motm',
+            newsIndex: -1,
+            tabLabel: 'שחקן המשחק',
+            badge: 'שחקן המשחק • MVP',
+            headerTitle: match.motmName || 'כוכב המשחק',
+            src: match.motmImage
+          });
+        }
+
+        var newsImgs = getNewspaperImages(match);
+        var totalNews = newsImgs.length;
+        newsImgs.forEach(function (src, idx) {
+          slides.push({
+            type: 'newspaper',
+            newsIndex: idx,
+            tabLabel: totalNews > 1 ? ('מהדורה ' + (idx + 1)) : 'מהדורת המחזור',
+            badge: totalNews > 1
+              ? ('מהדורת המחזור • עמוד ' + (idx + 1) + ' מתוך ' + totalNews)
+              : 'מהדורת המחזור • עיתון סיכום',
+            headerTitle: totalNews > 1
+              ? ('מהדורת המחזור (עמוד ' + (idx + 1) + '/' + totalNews + ')')
+              : 'מהדורת המחזור',
+            src: src
+          });
+        });
+
+        return slides;
       }
 
       var HEBREW_MONTHS = [
@@ -1253,40 +1376,34 @@
         canvas.height = options.height;
         var ctx = canvas.getContext('2d');
 
-        // Background gradient
         var grad = ctx.createLinearGradient(0, 0, options.width, options.height);
         grad.addColorStop(0, options.bg1);
         grad.addColorStop(1, options.bg2);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, options.width, options.height);
 
-        // Decorative border
         ctx.strokeStyle = options.accent;
         ctx.lineWidth = 8;
         drawRoundedRectPath(ctx, 20, 20, options.width - 40, options.height - 40, 24);
         ctx.stroke();
 
-        // Header badge
         ctx.fillStyle = options.accent;
-        drawRoundedRectPath(ctx, options.width / 2 - 150, 50, 300, 44, 22);
+        drawRoundedRectPath(ctx, options.width / 2 - 165, 50, 330, 44, 22);
         ctx.fill();
 
         ctx.fillStyle = '#090d16';
-        ctx.font = 'bold 22px Heebo, sans-serif';
+        ctx.font = 'bold 21px Heebo, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(options.badgeText, options.width / 2, 79);
 
-        // Main Headline
         ctx.fillStyle = '#ffffff';
         ctx.font = '900 38px Heebo, sans-serif';
         ctx.fillText(options.headline, options.width / 2, 165);
 
-        // Subtitle
         ctx.fillStyle = '#cbd5e1';
         ctx.font = '600 24px Heebo, sans-serif';
         ctx.fillText(options.subline, options.width / 2, 215);
 
-        // Newspaper lines / columns visual
         ctx.fillStyle = 'rgba(255,255,255,0.08)';
         drawRoundedRectPath(ctx, 55, 255, options.width - 110, options.height - 320, 18);
         ctx.fill();
@@ -1320,19 +1437,35 @@
           ]
         });
 
-        var news1 = generateSampleCardDataUrl({
+        var news1Page1 = generateSampleCardDataUrl({
           width: 960,
           height: 620,
           bg1: '#062019',
           bg2: '#0f172a',
           accent: '#10b981',
-          badgeText: 'ידיעות הרמתון • גיליון סיכום',
+          badgeText: 'ידיעות הרמתון • עמוד 1 מתוך 2',
           headline: 'מהפך מטורף בדרך ל-5:4!',
-          subline: 'סיכום המחזור השבועי • כל הציונים והכותרות',
+          subline: 'שער ראשי • סיכום המחזור השבועי',
           bodyLines: [
             'הקבוצה הלבנה חזרה מפיגור 3:1 במחצית השנייה',
             'שער ניצחון דרמטי בתוספת הזמן הקפיץ את כולם',
-            'לחצו על העיתון לקריאה בהגדלה (דוגמה להמחשה)'
+            'החליקו או לחצו להחלפה לעמוד 2 של המהדורה'
+          ]
+        });
+
+        var news1Page2 = generateSampleCardDataUrl({
+          width: 960,
+          height: 620,
+          bg1: '#071c26',
+          bg2: '#0f172a',
+          accent: '#34d399',
+          badgeText: 'ידיעות הרמתון • עמוד 2 מתוך 2',
+          headline: 'ציוני השחקנים וטבלת הכובשים',
+          subline: 'מוסף הסטטיסטיקה וראיונות מחדר ההלבשה',
+          bodyLines: [
+            'עומר לוי (9.5) • איתי מזרחי (8.5) • גיא אברהם (8.0)',
+            'שיא עונתי של 9 שערים בערב אחד',
+            'ניתן להעלות כמה תמונות שתרצו לכל מהדורת מחזור!'
           ]
         });
 
@@ -1374,7 +1507,8 @@
             title: 'מחזור פתיחה • 5:4 דרמטי',
             motmName: 'עומר לוי',
             motmImage: motm1,
-            newspaperImage: news1,
+            newspaperImages: [news1Page1, news1Page2],
+            newspaperImage: news1Page1,
             createdAt: Date.now(),
             updatedAt: Date.now()
           },
@@ -1384,6 +1518,7 @@
             title: 'מחזור טרום-עונה • 3:1 חלק',
             motmName: 'דניאל כהן',
             motmImage: motm2,
+            newspaperImages: [news2],
             newspaperImage: news2,
             createdAt: Date.now() - 86400000,
             updatedAt: Date.now() - 86400000
@@ -1410,7 +1545,6 @@
           return;
         }
 
-        // Latest match by date
         var sortedByDateDesc = allMatches.slice().sort(function (a, b) {
           return (b.matchDate || '').localeCompare(a.matchDate || '');
         });
@@ -1418,7 +1552,6 @@
           latestEl.textContent = formatHebrewDate(sortedByDateDesc[0].matchDate);
         }
 
-        // Top MVP leaderboard calculation
         var counts = {};
         var displayNames = {};
         allMatches.forEach(function (m) {
@@ -1447,7 +1580,6 @@
           }
         }
 
-        // Build Month Filter Pills
         if (monthBar) {
           var monthMap = {};
           sortedByDateDesc.forEach(function (m) {
@@ -1493,6 +1625,213 @@
               });
             });
           }
+        }
+      }
+
+      // Build inner HTML for Mobile Unified Carousel (all images of the matchweek in one place)
+      function buildMobileUnifiedViewerHtml(match) {
+        var safeId = escapeHtml(match.id);
+        var slides = getMatchMediaSlides(match);
+        if (slides.length === 0) return '';
+
+        var activeIdx = mobileSlideIndexMap[match.id] || 0;
+        if (activeIdx < 0 || activeIdx >= slides.length) {
+          activeIdx = 0;
+          mobileSlideIndexMap[match.id] = 0;
+        }
+        var currentSlide = slides[activeIdx];
+        var isMotm = currentSlide.type === 'motm';
+
+        // Top quick-switch pill tabs
+        var tabsHtml = slides.map(function (slide, idx) {
+          var active = idx === activeIdx;
+          var btnClass;
+          if (active) {
+            btnClass = slide.type === 'motm'
+              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+              : 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm';
+          } else {
+            btnClass = 'bg-slate-900/90 text-slate-300 border-slate-800 hover:border-slate-700';
+          }
+
+          var iconSvg = slide.type === 'motm'
+            ? '<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>'
+            : '<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M10 6h8v4h-8V6Z"></path></svg>';
+
+          return (
+            '<button type="button" data-action="mobile-goto" data-id="' + safeId + '" data-index="' + idx + '" ' +
+              'class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all shrink-0 ' + btnClass + '">' +
+              iconSvg +
+              '<span>' + escapeHtml(slide.tabLabel) + '</span>' +
+            '</button>'
+          );
+        }).join('');
+
+        // Dot indicators
+        var dotsHtml = slides.length > 1
+          ? '<div class="flex items-center justify-center gap-1.5 py-2.5 bg-slate-950/90 border-t border-slate-800/80">' +
+              slides.map(function (slide, idx) {
+                var active = idx === activeIdx;
+                var dotClass = active
+                  ? (slide.type === 'motm' ? 'w-5 bg-amber-400' : 'w-5 bg-emerald-400')
+                  : 'w-2 bg-slate-700 hover:bg-slate-600';
+                return (
+                  '<button type="button" aria-label="תמונה ' + (idx + 1) + '" data-action="mobile-goto" data-id="' + safeId + '" data-index="' + idx + '" ' +
+                    'class="h-2 rounded-full transition-all ' + dotClass + '"></button>'
+                );
+              }).join('') +
+            '</div>'
+          : '';
+
+        var borderClass = isMotm ? 'border-amber-500/30' : 'border-emerald-500/30';
+        var headerGradient = isMotm ? 'from-amber-500/15' : 'from-emerald-500/15';
+        var badgeIconBg = isMotm ? 'gold-gradient' : 'emerald-gradient';
+        var badgeTextColor = isMotm ? 'text-amber-400/95' : 'text-emerald-400/95';
+        var zoomBtnClass = isMotm
+          ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+          : 'text-emerald-300 bg-emerald-500/15 border border-emerald-500/30';
+
+        var badgeIcon = isMotm
+          ? '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>'
+          : '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M10 6h8v4h-8V6Z"></path></svg>';
+
+        var arrowsHtml = slides.length > 1
+          ? '<button type="button" aria-label="התמונה הקודמת" data-action="mobile-prev" data-id="' + safeId + '" ' +
+              'class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-slate-950/85 active:scale-95 text-white border border-slate-700/90 shadow-lg flex items-center justify-center">' +
+              '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+            '</button>' +
+            '<button type="button" aria-label="התמונה הבאה" data-action="mobile-next" data-id="' + safeId + '" ' +
+              'class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-slate-950/85 active:scale-95 text-white border border-slate-700/90 shadow-lg flex items-center justify-center">' +
+              '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>' +
+            '</button>'
+          : '';
+
+        return (
+          '<div class="space-y-3">' +
+            '<!-- Unified Quick-Switch Tabs -->' +
+            '<div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">' +
+              tabsHtml +
+            '</div>' +
+
+            '<!-- Unified Image Frame -->' +
+            '<div class="bg-slate-950/85 border ' + borderClass + ' rounded-2xl overflow-hidden shadow-lg">' +
+              '<div class="px-3.5 py-2.5 bg-gradient-to-l ' + headerGradient + ' to-transparent border-b border-slate-800/80 flex items-center justify-between gap-2">' +
+                '<div class="flex items-center gap-2 min-w-0">' +
+                  '<span class="w-7 h-7 rounded-lg ' + badgeIconBg + ' text-slate-950 flex items-center justify-center shrink-0">' +
+                    badgeIcon +
+                  '</span>' +
+                  '<div class="min-w-0">' +
+                    '<p class="text-[10px] font-bold ' + badgeTextColor + ' tracking-wide">' + escapeHtml(currentSlide.badge) + '</p>' +
+                    '<p class="font-display text-sm font-extrabold text-white truncate">' + escapeHtml(currentSlide.headerTitle) + '</p>' +
+                  '</div>' +
+                '</div>' +
+
+                '<div class="flex items-center gap-2 shrink-0">' +
+                  (slides.length > 1
+                    ? '<span class="text-[11px] font-bold text-slate-300 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">' + (activeIdx + 1) + ' / ' + slides.length + '</span>'
+                    : '') +
+                  '<button type="button" data-action="lightbox" data-id="' + safeId + '" data-slide-index="' + activeIdx + '" ' +
+                    'class="text-xs font-bold px-2.5 py-1 rounded-lg ' + zoomBtnClass + ' transition-colors">הגדל</button>' +
+                '</div>' +
+              '</div>' +
+
+              '<div data-swipe-match="' + safeId + '" data-swipe-scope="mobile" data-action="lightbox" data-id="' + safeId + '" data-slide-index="' + activeIdx + '" ' +
+                'class="relative min-h-[280px] max-h-[420px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden select-none">' +
+                arrowsHtml +
+                '<img src="' + currentSlide.src + '" alt="' + escapeHtml(currentSlide.headerTitle) + '" loading="lazy" class="w-full h-full max-h-[400px] object-contain" />' +
+              '</div>' +
+
+              dotsHtml +
+            '</div>' +
+          '</div>'
+        );
+      }
+
+      // Build inner HTML for Desktop Newspaper Column (supports 1 or multiple pages)
+      function buildDesktopNewspaperColumnHtml(match) {
+        var safeId = escapeHtml(match.id);
+        var safeDate = escapeHtml(formatHebrewDate(match.matchDate));
+        var newsImgs = getNewspaperImages(match);
+        var totalNews = newsImgs.length;
+
+        var activeNewsIdx = desktopNewsIndexMap[match.id] || 0;
+        if (activeNewsIdx < 0 || activeNewsIdx >= totalNews) {
+          activeNewsIdx = 0;
+          desktopNewsIndexMap[match.id] = 0;
+        }
+
+        var activeSrc = newsImgs[activeNewsIdx] || '';
+        // In unified lightbox slides, MVP is index 0 (if present), so newspaper page `activeNewsIdx` is at slide index `(match.motmImage ? 1 : 0) + activeNewsIdx`
+        var lightboxIdx = (match.motmImage ? 1 : 0) + activeNewsIdx;
+
+        var subtitleText = totalNews > 1
+          ? ('מהדורת המחזור • עמוד ' + (activeNewsIdx + 1) + ' מתוך ' + totalNews)
+          : 'מהדורת המחזור';
+
+        var arrowsHtml = totalNews > 1
+          ? '<button type="button" aria-label="העמוד הקודם" data-action="desktop-news-prev" data-id="' + safeId + '" ' +
+              'class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-slate-950/85 hover:bg-emerald-500 text-white hover:text-slate-950 border border-slate-700 shadow-lg flex items-center justify-center transition-colors">' +
+              '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+            '</button>' +
+            '<button type="button" aria-label="העמוד הבא" data-action="desktop-news-next" data-id="' + safeId + '" ' +
+              'class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-slate-950/85 hover:bg-emerald-500 text-white hover:text-slate-950 border border-slate-700 shadow-lg flex items-center justify-center transition-colors">' +
+              '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>' +
+            '</button>'
+          : '';
+
+        var pagePillsHtml = totalNews > 1
+          ? '<div class="px-3.5 py-2.5 bg-slate-950/90 border-t border-emerald-500/20 flex items-center justify-center gap-1.5 flex-wrap">' +
+              newsImgs.map(function (_, idx) {
+                var isCurr = idx === activeNewsIdx;
+                return (
+                  '<button type="button" data-action="desktop-news-goto" data-id="' + safeId + '" data-index="' + idx + '" ' +
+                    'class="px-3 py-1 rounded-lg text-xs font-bold transition-colors ' +
+                    (isCurr
+                      ? 'bg-emerald-500 text-slate-950'
+                      : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800') +
+                    '">עמוד ' + (idx + 1) + '</button>'
+                );
+              }).join('') +
+            '</div>'
+          : '';
+
+        return (
+          '<div class="px-4 py-3 bg-gradient-to-l from-emerald-500/15 to-transparent border-b border-emerald-500/20 flex items-center justify-between gap-2">' +
+            '<div class="flex items-center gap-2 min-w-0">' +
+              '<span class="w-7 h-7 rounded-lg emerald-gradient text-slate-950 flex items-center justify-center shrink-0">' +
+                '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M10 6h8v4h-8V6Z"></path></svg>' +
+              '</span>' +
+              '<div>' +
+                '<p class="text-[11px] font-bold text-emerald-400/90 uppercase tracking-wide">עיתון סיכום המשחק</p>' +
+                '<p class="font-display text-sm sm:text-base font-extrabold text-white">' + escapeHtml(subtitleText) + '</p>' +
+              '</div>' +
+            '</div>' +
+            '<button type="button" data-action="lightbox" data-id="' + safeId + '" data-slide-index="' + lightboxIdx + '" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-slate-950 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-400 transition-colors shrink-0">' +
+              '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>' +
+              '<span>קרא בהגדלה</span>' +
+            '</button>' +
+          '</div>' +
+          '<div data-swipe-match="' + safeId + '" data-swipe-scope="desktop-news" data-action="lightbox" data-id="' + safeId + '" data-slide-index="' + lightboxIdx + '" class="relative group flex-1 min-h-[260px] sm:min-h-[320px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden">' +
+            arrowsHtml +
+            '<img src="' + activeSrc + '" alt="עיתון סיכום המשחק - ' + safeDate + '" loading="lazy" class="w-full h-full max-h-[380px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />' +
+            '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 pointer-events-none">' +
+              '<span class="px-3.5 py-1.5 rounded-full bg-slate-950/90 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-lg">לחצו לקריאת הכתבות בזום</span>' +
+            '</div>' +
+          '</div>' +
+          pagePillsHtml
+        );
+      }
+
+      function refreshSingleMatchCardView(matchId) {
+        var match = allMatches.find(function (m) { return m.id === matchId; });
+        if (!match) return;
+        var mobileContainer = document.querySelector('[data-mobile-viewer="' + matchId + '"]');
+        if (mobileContainer) {
+          mobileContainer.innerHTML = buildMobileUnifiedViewerHtml(match);
+        }
+        var desktopNewsContainer = document.querySelector('[data-desktop-news-viewer="' + matchId + '"]');
+        if (desktopNewsContainer) {
+          desktopNewsContainer.innerHTML = buildDesktopNewspaperColumnHtml(match);
         }
       }
 
@@ -1552,11 +1891,14 @@
           var safeTitle = escapeHtml(match.title || 'סיכום המחזור השבועי');
           var safeMotmName = escapeHtml(match.motmName || 'כוכב המשחק');
 
+          var mobileUnifiedHtml = buildMobileUnifiedViewerHtml(match);
+          var desktopNewsHtml = buildDesktopNewspaperColumnHtml(match);
+
           return (
             '<article class="bg-slate-900/75 backdrop-blur-md border border-slate-800/90 hover:border-emerald-500/30 rounded-3xl overflow-hidden shadow-xl transition-all">' +
               '<!-- Card Top Header -->' +
-              '<div class="px-5 sm:px-7 py-4 bg-slate-950/70 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">' +
-                '<div class="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0">' +
+              '<div class="px-4 sm:px-7 py-3.5 sm:py-4 bg-slate-950/70 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">' +
+                '<div class="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">' +
                   '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-bold">' +
                     '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' +
                     '<span>' + safeDate + '</span>' +
@@ -1575,8 +1917,13 @@
                 '</div>' +
               '</div>' +
 
-              '<!-- Dual Media Grid: MVP + Newspaper -->' +
-              '<div class="p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">' +
+              '<!-- MOBILE VIEW (< 1024px): All Matchweek Images Unified in One Switchable Place -->' +
+              '<div class="block lg:hidden p-4" data-mobile-viewer="' + safeId + '">' +
+                mobileUnifiedHtml +
+              '</div>' +
+
+              '<!-- DESKTOP VIEW (>= 1024px): Side-by-Side MVP + Multi-Page Newspaper -->' +
+              '<div class="hidden lg:grid lg:grid-cols-12 gap-6 items-stretch p-7">' +
 
                 '<!-- Man of the Match Column -->' +
                 '<div class="lg:col-span-5 flex flex-col bg-slate-950/75 border border-amber-500/25 rounded-2xl overflow-hidden shadow-gold-glow">' +
@@ -1590,9 +1937,9 @@
                         '<p class="font-display text-sm sm:text-base font-extrabold text-white truncate">' + safeMotmName + '</p>' +
                       '</div>' +
                     '</div>' +
-                    '<button type="button" data-action="lightbox" data-mode="motm" data-id="' + safeId + '" class="text-xs font-bold text-amber-300 hover:text-amber-200 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors shrink-0">הגדל</button>' +
+                    '<button type="button" data-action="lightbox" data-id="' + safeId + '" data-slide-index="0" class="text-xs font-bold text-amber-300 hover:text-amber-200 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors shrink-0">הגדל</button>' +
                   '</div>' +
-                  '<div data-action="lightbox" data-mode="motm" data-id="' + safeId + '" class="relative group flex-1 min-h-[250px] sm:min-h-[300px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden">' +
+                  '<div data-action="lightbox" data-id="' + safeId + '" data-slide-index="0" class="relative group flex-1 min-h-[300px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden">' +
                     '<img src="' + (match.motmImage || '') + '" alt="שחקן המשחק - ' + safeMotmName + '" loading="lazy" class="w-full h-full max-h-[380px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />' +
                     '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">' +
                       '<span class="px-3 py-1.5 rounded-full bg-slate-950/90 border border-amber-500/40 text-amber-300 text-xs font-bold shadow-lg">לחצו לצפייה במסך מלא</span>' +
@@ -1600,29 +1947,9 @@
                   '</div>' +
                 '</div>' +
 
-                '<!-- Match Summary Newspaper Column -->' +
-                '<div class="lg:col-span-7 flex flex-col bg-slate-950/75 border border-emerald-500/25 rounded-2xl overflow-hidden">' +
-                  '<div class="px-4 py-3 bg-gradient-to-l from-emerald-500/15 to-transparent border-b border-emerald-500/20 flex items-center justify-between gap-2">' +
-                    '<div class="flex items-center gap-2 min-w-0">' +
-                      '<span class="w-7 h-7 rounded-lg emerald-gradient text-slate-950 flex items-center justify-center shrink-0">' +
-                        '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M10 6h8v4h-8V6Z"></path></svg>' +
-                      '</span>' +
-                      '<div>' +
-                        '<p class="text-[11px] font-bold text-emerald-400/90 uppercase tracking-wide">עיתון סיכום המשחק</p>' +
-                        '<p class="font-display text-sm sm:text-base font-extrabold text-white">מהדורת המחזור</p>' +
-                      '</div>' +
-                    '</div>' +
-                    '<button type="button" data-action="lightbox" data-mode="newspaper" data-id="' + safeId + '" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-slate-950 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-400 transition-colors shrink-0">' +
-                      '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>' +
-                      '<span>קרא בהגדלה</span>' +
-                    '</button>' +
-                  '</div>' +
-                  '<div data-action="lightbox" data-mode="newspaper" data-id="' + safeId + '" class="relative group flex-1 min-h-[260px] sm:min-h-[320px] bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden">' +
-                    '<img src="' + (match.newspaperImage || '') + '" alt="עיתון סיכום המשחק - ' + safeDate + '" loading="lazy" class="w-full h-full max-h-[380px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />' +
-                    '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">' +
-                      '<span class="px-3.5 py-1.5 rounded-full bg-slate-950/90 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-lg">לחצו לקריאת הכתבות בזום</span>' +
-                    '</div>' +
-                  '</div>' +
+                '<!-- Match Summary Newspaper Column (Multi-Page Support) -->' +
+                '<div data-desktop-news-viewer="' + safeId + '" class="lg:col-span-7 flex flex-col bg-slate-950/75 border border-emerald-500/25 rounded-2xl overflow-hidden">' +
+                  desktopNewsHtml +
                 '</div>' +
 
               '</div>' +
@@ -1633,7 +1960,7 @@
         feedEl.innerHTML = cardsHtml.join('');
       }
 
-      // -------------------- 6. UPLOAD / EDIT MODAL & IMAGE COMPRESSION --------------------
+      // -------------------- 6. UPLOAD / EDIT MODAL & MULTI-IMAGE COMPRESSION --------------------
       function showFormError(msg) {
         var banner = document.getElementById('formErrorBanner');
         var text = document.getElementById('formErrorText');
@@ -1653,9 +1980,59 @@
         preview.textContent = input.value ? formatHebrewDate(input.value) : '';
       }
 
+      function renderNewsUploadPreviews() {
+        var promptEl = document.getElementById('newsPrompt');
+        var wrapEl = document.getElementById('newsPreviewWrapper');
+        var gridEl = document.getElementById('newsThumbsGrid');
+        var countBadgeEl = document.getElementById('newsCountBadge');
+        if (!promptEl || !wrapEl || !gridEl) return;
+
+        if (compressedNewsDataUrls.length === 0) {
+          promptEl.classList.remove('hidden');
+          wrapEl.classList.add('hidden');
+          gridEl.innerHTML = '';
+          return;
+        }
+
+        promptEl.classList.add('hidden');
+        wrapEl.classList.remove('hidden');
+
+        if (countBadgeEl) {
+          countBadgeEl.textContent = compressedNewsDataUrls.length === 1
+            ? 'תמונה אחת נבחרה'
+            : (compressedNewsDataUrls.length + ' תמונות נבחרו');
+        }
+
+        gridEl.innerHTML = compressedNewsDataUrls.map(function (src, idx) {
+          var isFirst = idx === 0;
+          var isLast = idx === compressedNewsDataUrls.length - 1;
+          return (
+            '<div class="relative bg-slate-900 border border-slate-700/90 rounded-xl overflow-hidden flex flex-col group/thumb">' +
+              '<div class="relative h-24 w-full bg-slate-950 flex items-center justify-center overflow-hidden">' +
+                '<img src="' + src + '" alt="עמוד ' + (idx + 1) + '" class="h-full w-full object-cover" />' +
+                '<span class="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-md bg-slate-950/90 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold">עמוד ' + (idx + 1) + '</span>' +
+              '</div>' +
+              '<div class="px-1.5 py-1 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-1">' +
+                '<div class="flex items-center gap-1">' +
+                  '<button type="button" data-news-action="move-prev" data-index="' + idx + '" ' + (isFirst ? 'disabled' : '') + ' title="הזז ימינה" class="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-300 text-[10px]">' +
+                    '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+                  '</button>' +
+                  '<button type="button" data-news-action="move-next" data-index="' + idx + '" ' + (isLast ? 'disabled' : '') + ' title="הזז שמאלה" class="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-300 text-[10px]">' +
+                    '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>' +
+                  '</button>' +
+                '</div>' +
+                '<button type="button" data-news-action="remove" data-index="' + idx + '" title="הסר תמונה" class="p-1 rounded bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white transition-colors">' +
+                  '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+                '</button>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
       function resetDropZonePreviews() {
         compressedMotmDataUrl = '';
-        compressedNewsDataUrl = '';
+        compressedNewsDataUrls = [];
 
         var motmPrompt = document.getElementById('motmPrompt');
         var motmWrap = document.getElementById('motmPreviewWrapper');
@@ -1666,14 +2043,9 @@
         if (motmImg) motmImg.src = '';
         if (motmInput) motmInput.value = '';
 
-        var newsPrompt = document.getElementById('newsPrompt');
-        var newsWrap = document.getElementById('newsPreviewWrapper');
-        var newsImg = document.getElementById('newsPreviewImg');
         var newsInput = document.getElementById('newsFileInput');
-        if (newsPrompt) newsPrompt.classList.remove('hidden');
-        if (newsWrap) newsWrap.classList.add('hidden');
-        if (newsImg) newsImg.src = '';
         if (newsInput) newsInput.value = '';
+        renderNewsUploadPreviews();
       }
 
       function openNewUploadModal() {
@@ -1712,12 +2084,10 @@
           document.getElementById('motmPreviewWrapper').classList.remove('hidden');
         }
 
-        if (match.newspaperImage) {
-          compressedNewsDataUrl = match.newspaperImage;
-          document.getElementById('newsPreviewImg').src = match.newspaperImage;
-          document.getElementById('newsSizeBadge').textContent = 'תמונה קיימת';
-          document.getElementById('newsPrompt').classList.add('hidden');
-          document.getElementById('newsPreviewWrapper').classList.remove('hidden');
+        var existingNews = getNewspaperImages(match);
+        if (existingNews.length > 0) {
+          compressedNewsDataUrls = existingNews.slice();
+          renderNewsUploadPreviews();
         }
 
         document.getElementById('uploadModalTitle').textContent = 'עריכת פרטי מחזור';
@@ -1733,7 +2103,7 @@
         hideFormError();
       }
 
-      function compressImageFile(file, maxDimension, quality) {
+      function compressImageFile(file, maxDimension, quality, targetMaxKb) {
         return new Promise(function (resolve, reject) {
           if (!file || !file.type || file.type.indexOf('image/') !== 0) {
             reject(new Error('אנא בחרו קובץ תמונה תקין (JPG, PNG או WEBP).'));
@@ -1765,13 +2135,13 @@
               ctx.fillRect(0, 0, width, height);
               ctx.drawImage(img, 0, 0, width, height);
 
-              var currentQuality = quality || 0.82;
+              var currentQuality = quality || 0.80;
+              var maxKb = targetMaxKb || 320;
               var dataUrl = canvas.toDataURL('image/jpeg', currentQuality);
               var kbSize = Math.max(1, Math.round((dataUrl.length * 3) / 4 / 1024));
 
-              // Ensure image stays safely under Firestore 1MB combined document limit
-              if (kbSize > 450) {
-                dataUrl = canvas.toDataURL('image/jpeg', 0.66);
+              if (kbSize > maxKb) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.64);
                 kbSize = Math.max(1, Math.round((dataUrl.length * 3) / 4 / 1024));
               }
 
@@ -1789,7 +2159,56 @@
         });
       }
 
-      function setupImageDropZone(dropZoneId, fileInputId, changeBtnId, maxDim, onProcessed) {
+      // Helper to re-compress a dataURL if total multi-image document approaches Firestore's 1MB limit
+      function recompressDataUrl(dataUrl, maxDim, quality) {
+        return new Promise(function (resolve) {
+          var img = new Image();
+          img.onload = function () {
+            var w = img.width;
+            var h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w >= h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = function () { resolve(dataUrl); };
+          img.src = dataUrl;
+        });
+      }
+
+      async function ensureCloudSafePayloadSize(matchRecord) {
+        var serializedSize = JSON.stringify(matchRecord).length;
+        // Firestore limit is 1,048,576 bytes; keep safely below 880,000 bytes
+        if (serializedSize <= 880000) return matchRecord;
+
+        var count = Math.max(1, matchRecord.newspaperImages.length);
+        var perPageDim = count >= 5 ? 820 : (count >= 3 ? 960 : 1080);
+        var perPageQuality = count >= 5 ? 0.56 : 0.64;
+
+        var optimizedNews = [];
+        for (var i = 0; i < matchRecord.newspaperImages.length; i++) {
+          var opt = await recompressDataUrl(matchRecord.newspaperImages[i], perPageDim, perPageQuality);
+          optimizedNews.push(opt);
+        }
+        matchRecord.newspaperImages = optimizedNews;
+        matchRecord.newspaperImage = optimizedNews[0] || '';
+        return matchRecord;
+      }
+
+      function setupSingleImageDropZone(dropZoneId, fileInputId, changeBtnId, maxDim, onProcessed) {
         var dropZoneEl = document.getElementById(dropZoneId);
         var fileInputEl = document.getElementById(fileInputId);
         var changeBtnEl = document.getElementById(changeBtnId);
@@ -1811,20 +2230,20 @@
 
         dropZoneEl.addEventListener('dragover', function (e) {
           e.preventDefault();
-          dropZoneEl.classList.add('border-emerald-400', 'bg-slate-900');
+          dropZoneEl.classList.add('border-amber-400', 'bg-slate-900');
         });
 
         dropZoneEl.addEventListener('dragleave', function () {
-          dropZoneEl.classList.remove('border-emerald-400', 'bg-slate-900');
+          dropZoneEl.classList.remove('border-amber-400', 'bg-slate-900');
         });
 
         dropZoneEl.addEventListener('drop', function (e) {
           e.preventDefault();
-          dropZoneEl.classList.remove('border-emerald-400', 'bg-slate-900');
+          dropZoneEl.classList.remove('border-amber-400', 'bg-slate-900');
           var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
           if (file) {
             hideFormError();
-            compressImageFile(file, maxDim, 0.82)
+            compressImageFile(file, maxDim, 0.82, 320)
               .then(onProcessed)
               .catch(function (err) {
                 showFormError(err.message || 'שגיאה בעיבוד התמונה');
@@ -1836,11 +2255,111 @@
           var file = e.target.files && e.target.files[0];
           if (file) {
             hideFormError();
-            compressImageFile(file, maxDim, 0.82)
+            compressImageFile(file, maxDim, 0.82, 320)
               .then(onProcessed)
               .catch(function (err) {
                 showFormError(err.message || 'שגיאה בעיבוד התמונה');
               });
+          }
+        });
+      }
+
+      function setupMultiNewspaperDropZone() {
+        var dropZoneEl = document.getElementById('newsDropZone');
+        var fileInputEl = document.getElementById('newsFileInput');
+        var addMoreBtnEl = document.getElementById('addMoreNewsBtn');
+        var clearAllBtnEl = document.getElementById('clearAllNewsBtn');
+        var thumbsGridEl = document.getElementById('newsThumbsGrid');
+        if (!dropZoneEl || !fileInputEl) return;
+
+        async function processSelectedNewsFiles(fileList) {
+          var files = Array.prototype.slice.call(fileList || []).filter(function (f) {
+            return f && f.type && f.type.indexOf('image/') === 0;
+          });
+          if (files.length === 0) {
+            showFormError('אנא בחרו קובצי תמונה תקינים (JPG, PNG או WEBP).');
+            return;
+          }
+          hideFormError();
+          for (var i = 0; i < files.length; i++) {
+            try {
+              var res = await compressImageFile(files[i], 1220, 0.80, 260);
+              compressedNewsDataUrls.push(res.dataUrl);
+            } catch (err) {
+              showFormError(err.message || 'שגיאה בעיבוד אחת התמונות');
+            }
+          }
+          renderNewsUploadPreviews();
+        }
+
+        dropZoneEl.addEventListener('click', function (e) {
+          if (e.target.closest('button') || e.target.closest('[data-news-action]')) {
+            return;
+          }
+          fileInputEl.click();
+        });
+
+        if (addMoreBtnEl) {
+          addMoreBtnEl.addEventListener('click', function (e) {
+            e.stopPropagation();
+            fileInputEl.click();
+          });
+        }
+
+        if (clearAllBtnEl) {
+          clearAllBtnEl.addEventListener('click', function (e) {
+            e.stopPropagation();
+            compressedNewsDataUrls = [];
+            fileInputEl.value = '';
+            renderNewsUploadPreviews();
+          });
+        }
+
+        if (thumbsGridEl) {
+          thumbsGridEl.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-news-action]');
+            if (!btn) return;
+            e.stopPropagation();
+            var action = btn.dataset.newsAction;
+            var idx = parseInt(btn.dataset.index, 10);
+            if (isNaN(idx) || idx < 0 || idx >= compressedNewsDataUrls.length) return;
+
+            if (action === 'remove') {
+              compressedNewsDataUrls.splice(idx, 1);
+            } else if (action === 'move-prev' && idx > 0) {
+              var tempPrev = compressedNewsDataUrls[idx - 1];
+              compressedNewsDataUrls[idx - 1] = compressedNewsDataUrls[idx];
+              compressedNewsDataUrls[idx] = tempPrev;
+            } else if (action === 'move-next' && idx < compressedNewsDataUrls.length - 1) {
+              var tempNext = compressedNewsDataUrls[idx + 1];
+              compressedNewsDataUrls[idx + 1] = compressedNewsDataUrls[idx];
+              compressedNewsDataUrls[idx] = tempNext;
+            }
+            renderNewsUploadPreviews();
+          });
+        }
+
+        dropZoneEl.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          dropZoneEl.classList.add('border-emerald-400', 'bg-slate-900');
+        });
+
+        dropZoneEl.addEventListener('dragleave', function () {
+          dropZoneEl.classList.remove('border-emerald-400', 'bg-slate-900');
+        });
+
+        dropZoneEl.addEventListener('drop', function (e) {
+          e.preventDefault();
+          dropZoneEl.classList.remove('border-emerald-400', 'bg-slate-900');
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            processSelectedNewsFiles(e.dataTransfer.files);
+          }
+        });
+
+        fileInputEl.addEventListener('change', function (e) {
+          if (e.target.files && e.target.files.length > 0) {
+            processSelectedNewsFiles(e.target.files);
+            e.target.value = '';
           }
         });
       }
@@ -1883,49 +2402,72 @@
 
       function renderLightboxContent() {
         if (!lightboxMatch) return;
+        var slides = getMatchMediaSlides(lightboxMatch);
+        if (slides.length === 0) return;
+
+        if (lightboxSlideIndex < 0) lightboxSlideIndex = slides.length - 1;
+        if (lightboxSlideIndex >= slides.length) lightboxSlideIndex = 0;
+
+        var currentSlide = slides[lightboxSlideIndex];
+        var isMotm = currentSlide.type === 'motm';
+
         var imgEl = document.getElementById('lightboxImage');
         var badgeEl = document.getElementById('lightboxBadge');
         var titleEl = document.getElementById('lightboxTitle');
         var dateEl = document.getElementById('lightboxDate');
-        var motmTabBtn = document.getElementById('lbSwitchMotmBtn');
-        var newsTabBtn = document.getElementById('lbSwitchNewsBtn');
+        var tabsContainer = document.getElementById('lightboxTabsContainer');
+        var prevBtn = document.getElementById('lbPrevSlideBtn');
+        var nextBtn = document.getElementById('lbNextSlideBtn');
 
-        var isMotm = lightboxMode === 'motm';
         if (imgEl) {
-          imgEl.src = isMotm ? (lightboxMatch.motmImage || '') : (lightboxMatch.newspaperImage || '');
+          imgEl.src = currentSlide.src;
         }
         if (badgeEl) {
-          if (isMotm) {
-            badgeEl.textContent = 'שחקן המשחק • MVP';
-            badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
-          } else {
-            badgeEl.textContent = 'עיתון סיכום';
-            badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-          }
+          badgeEl.textContent = currentSlide.badge;
+          badgeEl.className = isMotm
+            ? 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0'
+            : 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0';
         }
         if (titleEl) {
-          titleEl.textContent = isMotm
-            ? (lightboxMatch.motmName || 'כוכב המחזור')
-            : (lightboxMatch.title || 'עיתון סיכום המשחק');
+          titleEl.textContent = currentSlide.headerTitle;
         }
         if (dateEl) {
           dateEl.textContent = formatHebrewDate(lightboxMatch.matchDate);
         }
 
-        if (motmTabBtn && newsTabBtn) {
-          if (isMotm) {
-            motmTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 transition-colors';
-            newsTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-colors';
+        if (tabsContainer) {
+          tabsContainer.innerHTML = slides.map(function (slide, idx) {
+            var active = idx === lightboxSlideIndex;
+            var btnClass;
+            if (active) {
+              btnClass = slide.type === 'motm'
+                ? 'bg-amber-500 text-slate-950'
+                : 'bg-emerald-500 text-slate-950';
+            } else {
+              btnClass = 'text-slate-400 hover:text-white';
+            }
+            return (
+              '<button type="button" data-lb-slide="' + idx + '" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shrink-0 ' + btnClass + '">' +
+                escapeHtml(slide.tabLabel) +
+              '</button>'
+            );
+          }).join('');
+        }
+
+        if (prevBtn && nextBtn) {
+          if (slides.length > 1) {
+            prevBtn.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
           } else {
-            newsTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition-colors';
-            motmTabBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-colors';
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
           }
         }
       }
 
-      function openLightbox(match, mode) {
+      function openLightbox(match, slideIndex) {
         lightboxMatch = match;
-        lightboxMode = mode || 'newspaper';
+        lightboxSlideIndex = typeof slideIndex === 'number' && !isNaN(slideIndex) ? slideIndex : 0;
         resetLightboxTransform();
         renderLightboxContent();
         var lbModal = document.getElementById('lightboxModal');
@@ -2021,7 +2563,6 @@
         var auth = authMod.getAuth(fbApp);
         var db = fsMod.getFirestore(fbApp);
 
-        // Mandatory Rule 3: Authenticate FIRST and await before any Firestore query
         if (customToken) {
           await authMod.signInWithCustomToken(auth, customToken);
         } else {
@@ -2047,11 +2588,9 @@
 
         updateConnectionBadge(mode);
 
-        // Mandatory Rule 1: Strict /artifacts/{appId}/public/data/{collectionName} path
         var settingsDocRef = fsMod.doc(db, 'artifacts', appId, 'public', 'data', 'haramaton_settings', 'config');
         var matchesColRef = fsMod.collection(db, 'artifacts', appId, 'public', 'data', 'haramaton_matches');
 
-        // Listen to league title changes
         cloudState.unsubSettings = fsMod.onSnapshot(
           settingsDocRef,
           async function (snap) {
@@ -2068,7 +2607,6 @@
           }
         );
 
-        // Mandatory Rule 2: Simple collection() query without orderBy/where/limit
         cloudState.unsubMatches = fsMod.onSnapshot(
           matchesColRef,
           async function (snapshot) {
@@ -2089,7 +2627,6 @@
               updateStatsAndFilters();
               renderMatchesFeed();
             } else if (allMatches.length > 0) {
-              // Push initial local matches up to empty cloud
               await syncAllLocalMatchesToCloud();
             }
           },
@@ -2232,8 +2769,8 @@
         bindEvent('cancelUploadModalBtn', 'click', closeUploadModal);
         bindEvent('matchDateInput', 'change', updateFormattedDatePreview);
 
-        // 3. Dual Image Drop Zones (MOTM max 800px, Newspaper max 1280px at crisp JPEG quality)
-        setupImageDropZone('motmDropZone', 'motmFileInput', 'changeMotmBtn', 800, function (res) {
+        // 3. Drop Zones: Single MOTM + Multi-Image Edition
+        setupSingleImageDropZone('motmDropZone', 'motmFileInput', 'changeMotmBtn', 800, function (res) {
           compressedMotmDataUrl = res.dataUrl;
           document.getElementById('motmPreviewImg').src = res.dataUrl;
           document.getElementById('motmSizeBadge').textContent = 'מוכן (' + res.kbSize + ' KB)';
@@ -2241,13 +2778,7 @@
           document.getElementById('motmPreviewWrapper').classList.remove('hidden');
         });
 
-        setupImageDropZone('newsDropZone', 'newsFileInput', 'changeNewsBtn', 1280, function (res) {
-          compressedNewsDataUrl = res.dataUrl;
-          document.getElementById('newsPreviewImg').src = res.dataUrl;
-          document.getElementById('newsSizeBadge').textContent = 'חד ומוכן (' + res.kbSize + ' KB)';
-          document.getElementById('newsPrompt').classList.add('hidden');
-          document.getElementById('newsPreviewWrapper').classList.remove('hidden');
-        });
+        setupMultiNewspaperDropZone();
 
         // 4. Match Form Submission (Instant local save + automatic cloud sync)
         bindEvent('matchForm', 'submit', async function (e) {
@@ -2267,8 +2798,8 @@
             showFormError('אנא העלו את תמונת שחקן המשחק.');
             return;
           }
-          if (!compressedNewsDataUrl) {
-            showFormError('אנא העלו את תמונת עיתון סיכום המשחק.');
+          if (!compressedNewsDataUrls || compressedNewsDataUrls.length === 0) {
+            showFormError('אנא העלו לפחות תמונה אחת למהדורת המחזור.');
             return;
           }
 
@@ -2288,10 +2819,14 @@
               title: title,
               motmName: motmName,
               motmImage: compressedMotmDataUrl,
-              newspaperImage: compressedNewsDataUrl,
+              newspaperImages: compressedNewsDataUrls.slice(),
+              newspaperImage: compressedNewsDataUrls[0] || '',
               createdAt: existingMatch ? (existingMatch.createdAt || Date.now()) : Date.now(),
               updatedAt: Date.now()
             };
+
+            // Keep combined payload safely within Firestore 1MB document limit
+            matchRecord = await ensureCloudSafePayloadSize(matchRecord);
 
             await LocalDB.saveMatch(matchRecord);
             await LocalDB.saveSettings({ seeded: true });
@@ -2303,6 +2838,9 @@
             } else {
               allMatches.unshift(matchRecord);
             }
+
+            mobileSlideIndexMap[matchRecord.id] = 0;
+            desktopNewsIndexMap[matchRecord.id] = 0;
 
             updateStatsAndFilters();
             renderMatchesFeed();
@@ -2334,11 +2872,17 @@
           if (cloudState.ready) {
             await syncAllLocalMatchesToCloud();
           }
-          showToast('נטענו 2 מחזורים לדוגמה! לחצו על העיתון כדי לקרוא מקרוב.');
+          showToast('נטענו 2 מחזורים לדוגמה! החליפו בין התמונות ובדקו.');
         });
 
-        // 6. Weekly Feed Delegation (Lightbox, Edit, Delete)
-        bindEvent('weeklyFeed', 'click', function (e) {
+        // 6. Weekly Feed Delegation (Mobile Unified Switcher, Desktop Newspaper Switcher, Lightbox, Edit, Delete)
+        var weeklyFeedEl = bindEvent('weeklyFeed', 'click', function (e) {
+          if (suppressNextFeedClick) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+
           var target = e.target.closest('[data-action]');
           if (!target) return;
           var action = target.dataset.action;
@@ -2346,8 +2890,37 @@
           var match = allMatches.find(function (m) { return m.id === id; });
           if (!match) return;
 
-          if (action === 'lightbox') {
-            openLightbox(match, target.dataset.mode || 'newspaper');
+          if (action === 'mobile-prev' || action === 'mobile-next' || action === 'mobile-goto') {
+            e.stopPropagation();
+            var slides = getMatchMediaSlides(match);
+            if (slides.length <= 1) return;
+            var curr = mobileSlideIndexMap[id] || 0;
+            if (action === 'mobile-prev') {
+              curr = (curr - 1 + slides.length) % slides.length;
+            } else if (action === 'mobile-next') {
+              curr = (curr + 1) % slides.length;
+            } else {
+              curr = parseInt(target.dataset.index, 10) || 0;
+            }
+            mobileSlideIndexMap[id] = curr;
+            refreshSingleMatchCardView(id);
+          } else if (action === 'desktop-news-prev' || action === 'desktop-news-next' || action === 'desktop-news-goto') {
+            e.stopPropagation();
+            var newsImgs = getNewspaperImages(match);
+            if (newsImgs.length <= 1) return;
+            var currNews = desktopNewsIndexMap[id] || 0;
+            if (action === 'desktop-news-prev') {
+              currNews = (currNews - 1 + newsImgs.length) % newsImgs.length;
+            } else if (action === 'desktop-news-next') {
+              currNews = (currNews + 1) % newsImgs.length;
+            } else {
+              currNews = parseInt(target.dataset.index, 10) || 0;
+            }
+            desktopNewsIndexMap[id] = currNews;
+            refreshSingleMatchCardView(id);
+          } else if (action === 'lightbox') {
+            var slideIdx = parseInt(target.dataset.slideIndex, 10);
+            openLightbox(match, isNaN(slideIdx) ? 0 : slideIdx);
           } else if (action === 'edit') {
             openEditModal(match);
           } else if (action === 'delete') {
@@ -2356,6 +2929,58 @@
             if (delModal) delModal.classList.remove('hidden');
           }
         });
+
+        // Touch Swipe Support on Mobile Unified Viewer & Desktop Newspaper Viewer
+        if (weeklyFeedEl) {
+          weeklyFeedEl.addEventListener('touchstart', function (e) {
+            if (e.touches.length !== 1) return;
+            var swipeTarget = e.target.closest('[data-swipe-match]');
+            if (!swipeTarget) {
+              feedSwipeContext = null;
+              return;
+            }
+            feedTouchStartX = e.touches[0].clientX;
+            feedTouchStartY = e.touches[0].clientY;
+            feedSwipeContext = {
+              matchId: swipeTarget.dataset.swipeMatch,
+              scope: swipeTarget.dataset.swipeScope || 'mobile'
+            };
+          }, { passive: true });
+
+          weeklyFeedEl.addEventListener('touchend', function (e) {
+            if (!feedSwipeContext || e.changedTouches.length !== 1) return;
+            var dx = e.changedTouches[0].clientX - feedTouchStartX;
+            var dy = e.changedTouches[0].clientY - feedTouchStartY;
+            var ctx = feedSwipeContext;
+            feedSwipeContext = null;
+
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+              var match = allMatches.find(function (m) { return m.id === ctx.matchId; });
+              if (!match) return;
+
+              suppressNextFeedClick = true;
+              setTimeout(function () { suppressNextFeedClick = false; }, 320);
+
+              if (ctx.scope === 'mobile') {
+                var slides = getMatchMediaSlides(match);
+                if (slides.length <= 1) return;
+                var curr = mobileSlideIndexMap[ctx.matchId] || 0;
+                mobileSlideIndexMap[ctx.matchId] = dx < 0
+                  ? (curr + 1) % slides.length
+                  : (curr - 1 + slides.length) % slides.length;
+                refreshSingleMatchCardView(ctx.matchId);
+              } else if (ctx.scope === 'desktop-news') {
+                var newsImgs = getNewspaperImages(match);
+                if (newsImgs.length <= 1) return;
+                var currNews = desktopNewsIndexMap[ctx.matchId] || 0;
+                desktopNewsIndexMap[ctx.matchId] = dx < 0
+                  ? (currNews + 1) % newsImgs.length
+                  : (currNews - 1 + newsImgs.length) % newsImgs.length;
+                refreshSingleMatchCardView(ctx.matchId);
+              }
+            }
+          }, { passive: true });
+        }
 
         // 7. Delete Confirmation Modal
         bindEvent('cancelDeleteBtn', 'click', function () {
@@ -2418,15 +3043,34 @@
           renderMatchesFeed();
         });
 
-        // 9. Lightbox Controls (Switch, Zoom, Pan, Download, Close)
-        bindEvent('lbSwitchMotmBtn', 'click', function () {
-          lightboxMode = 'motm';
+        // 9. Lightbox Controls (Dynamic Tabs, Slide Arrows, Zoom, Pan, Download, Close)
+        bindEvent('lightboxTabsContainer', 'click', function (e) {
+          var tabBtn = e.target.closest('[data-lb-slide]');
+          if (!tabBtn) return;
+          var idx = parseInt(tabBtn.dataset.lbSlide, 10);
+          if (!isNaN(idx)) {
+            lightboxSlideIndex = idx;
+            resetLightboxTransform();
+            renderLightboxContent();
+          }
+        });
+
+        bindEvent('lbPrevSlideBtn', 'click', function (e) {
+          e.stopPropagation();
+          if (!lightboxMatch) return;
+          var slides = getMatchMediaSlides(lightboxMatch);
+          if (slides.length <= 1) return;
+          lightboxSlideIndex = (lightboxSlideIndex - 1 + slides.length) % slides.length;
           resetLightboxTransform();
           renderLightboxContent();
         });
 
-        bindEvent('lbSwitchNewsBtn', 'click', function () {
-          lightboxMode = 'newspaper';
+        bindEvent('lbNextSlideBtn', 'click', function (e) {
+          e.stopPropagation();
+          if (!lightboxMatch) return;
+          var slides = getMatchMediaSlides(lightboxMatch);
+          if (slides.length <= 1) return;
+          lightboxSlideIndex = (lightboxSlideIndex + 1) % slides.length;
           resetLightboxTransform();
           renderLightboxContent();
         });
@@ -2443,7 +3087,8 @@
           });
         });
 
-        var lightboxStage = bindEvent('lightboxStage', 'dblclick', function () {
+        var lightboxStage = bindEvent('lightboxStage', 'dblclick', function (e) {
+          if (e.target.closest('button')) return;
           if (lbZoom > 1) {
             resetLightboxTransform();
           } else {
@@ -2455,7 +3100,7 @@
 
         if (lightboxStage) {
           lightboxStage.addEventListener('mousedown', function (e) {
-            if (lbZoom <= 1) return;
+            if (e.target.closest('button') || lbZoom <= 1) return;
             isDraggingLb = true;
             dragStartX = e.clientX - lbTranslateX;
             dragStartY = e.clientY - lbTranslateY;
@@ -2477,31 +3122,51 @@
           });
 
           lightboxStage.addEventListener('touchstart', function (e) {
-            if (lbZoom <= 1 || e.touches.length !== 1) return;
-            isDraggingLb = true;
-            dragStartX = e.touches[0].clientX - lbTranslateX;
-            dragStartY = e.touches[0].clientY - lbTranslateY;
+            if (e.touches.length !== 1) return;
+            lbTouchStartX = e.touches[0].clientX;
+            lbTouchStartY = e.touches[0].clientY;
+            if (lbZoom > 1) {
+              isDraggingLb = true;
+              dragStartX = e.touches[0].clientX - lbTranslateX;
+              dragStartY = e.touches[0].clientY - lbTranslateY;
+            }
           }, { passive: true });
 
           lightboxStage.addEventListener('touchmove', function (e) {
-            if (!isDraggingLb || e.touches.length !== 1) return;
+            if (!isDraggingLb || e.touches.length !== 1 || lbZoom <= 1) return;
             lbTranslateX = e.touches[0].clientX - dragStartX;
             lbTranslateY = e.touches[0].clientY - dragStartY;
             applyLightboxTransform();
           }, { passive: true });
 
-          lightboxStage.addEventListener('touchend', function () {
+          lightboxStage.addEventListener('touchend', function (e) {
+            if (lbZoom === 1 && lightboxMatch && e.changedTouches.length === 1) {
+              var dx = e.changedTouches[0].clientX - lbTouchStartX;
+              var dy = e.changedTouches[0].clientY - lbTouchStartY;
+              if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                var slides = getMatchMediaSlides(lightboxMatch);
+                if (slides.length > 1) {
+                  lightboxSlideIndex = dx < 0
+                    ? (lightboxSlideIndex + 1) % slides.length
+                    : (lightboxSlideIndex - 1 + slides.length) % slides.length;
+                  renderLightboxContent();
+                }
+              }
+            }
             isDraggingLb = false;
           });
         }
 
         bindEvent('lbDownloadBtn', 'click', function () {
           if (!lightboxMatch) return;
-          var dataUrl = lightboxMode === 'motm' ? lightboxMatch.motmImage : lightboxMatch.newspaperImage;
-          if (!dataUrl) return;
+          var slides = getMatchMediaSlides(lightboxMatch);
+          var currentSlide = slides[lightboxSlideIndex];
+          if (!currentSlide || !currentSlide.src) return;
           var link = document.createElement('a');
-          var prefix = lightboxMode === 'motm' ? 'haramaton-mvp' : 'haramaton-newspaper';
-          link.href = dataUrl;
+          var prefix = currentSlide.type === 'motm'
+            ? 'haramaton-mvp'
+            : ('haramaton-newspaper-p' + (currentSlide.newsIndex + 1));
+          link.href = currentSlide.src;
           link.download = prefix + '-' + (lightboxMatch.matchDate || 'match') + '.jpg';
           document.body.appendChild(link);
           link.click();
@@ -2747,13 +3412,31 @@
           reader.readAsText(file);
         });
 
-        // 12. Keyboard Escape Support
+        // 12. Keyboard Navigation (Escape + Arrow Keys in Lightbox)
         window.addEventListener('keydown', function (e) {
+          var lb = document.getElementById('lightboxModal');
+          if (lb && !lb.classList.contains('hidden')) {
+            if (e.key === 'Escape') {
+              closeLightbox();
+              return;
+            }
+            if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && lightboxMatch) {
+              var slides = getMatchMediaSlides(lightboxMatch);
+              if (slides.length > 1) {
+                // In RTL: ArrowLeft moves forward (next), ArrowRight moves backward (prev)
+                lightboxSlideIndex = e.key === 'ArrowLeft'
+                  ? (lightboxSlideIndex + 1) % slides.length
+                  : (lightboxSlideIndex - 1 + slides.length) % slides.length;
+                resetLightboxTransform();
+                renderLightboxContent();
+              }
+            }
+            return;
+          }
+
           if (e.key === 'Escape') {
-            var lb = document.getElementById('lightboxModal');
             var up = document.getElementById('uploadModal');
             var dl = document.getElementById('deleteConfirmModal');
-            if (lb && !lb.classList.contains('hidden')) closeLightbox();
             if (up && !up.classList.contains('hidden')) closeUploadModal();
             if (cloudModal && !cloudModal.classList.contains('hidden')) cloudModal.classList.add('hidden');
             if (backupModal && !backupModal.classList.contains('hidden')) backupModal.classList.add('hidden');
@@ -2767,16 +3450,13 @@
 
       async function bootstrapApp() {
         try {
-          // Attach all UI & form listeners synchronously first
           bindAllEventListeners();
 
-          // Load saved settings & matches from local IndexedDB immediately
           var settings = await LocalDB.getSettings();
           applyLeagueTitle(settings.title || 'הרמתון');
 
           var storedMatches = await LocalDB.getAllMatches();
 
-          // Seed from preloaded standalone export OR 2 sample entries on first load
           var preloaded = window.__PRELOADED_ARCHIVE__;
           if (storedMatches.length === 0 && preloaded && Array.isArray(preloaded.matches) && preloaded.matches.length > 0) {
             if (preloaded.title) {
@@ -2803,7 +3483,6 @@
           updateStatsAndFilters();
           renderMatchesFeed();
 
-          // Initialize Firebase cloud sync (environment preview or embedded external config)
           initCloudEngine();
         } catch (err) {
           console.error('Bootstrap error:', err);
@@ -2821,3 +3500,5 @@
   </script>
 </body>
 </html>
+
+```
